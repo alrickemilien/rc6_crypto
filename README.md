@@ -24,3 +24,14 @@ Keywords:
     Symmetric. It uses same key for encryption and Decryption.
     Asymmetric. It uses two different keys(public and private) to encrypt and decrypt.
 
+We decide here to implement **RC6** algorithm.
+
+## Build
+
+Build requires **nasm 2.14**. Actually build works only on osx.
+Build generates `libww_crypto.so` into `./build` directory.
+
+## Test
+
+During compilation, binary test is provided at `./build/test`.
+
