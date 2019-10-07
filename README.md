@@ -35,3 +35,6 @@ Build generates `libww_crypto.so` into `./build` directory.
 
 During compilation, binary test is provided at `./build/test`.
 
+On OSX, just run `./build/test`
+On Linux platform, run `LD_LIBRARY_PATH=build/ ./build/test`
+

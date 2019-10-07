@@ -1,29 +1,34 @@
-ifneq ($(shell uname -s), Darwin)
-$(error OSX required ...)
-endif
-
-ifneq ($(CC),)
+# Set default C compiler
+ifeq ($(CC),)
 CC=clang
 endif
 
-ifneq ($(CC),)
+# Set default asm compiler
+ifeq ($(CCASM),)
 CCASM=~/.brew/bin/nasm
 endif
 
 NASM_VERSION=$(shell $(CCASM) -v | cut -d' ' -f3)
 
-REAQUIRED_NSAM_VERSION=2.14.02
+# REAQUIRED_NSAM_VERSION=2.14.02
 
-ifneq ($(NASM_VERSION), $(REAQUIRED_NSAM_VERSION))
-$(error the actual version is $(NASM_VERSION), version $(REAQUIRED_NSAM_VERSION) required ...)
-endif
+# ifneq ($(NASM_VERSION), $(REAQUIRED_NSAM_VERSION))
+# $(error the actual version is $(NASM_VERSION), version $(REAQUIRED_NSAM_VERSION) required ...)
+# endif
 
 OUT_DIR=./build
 
 $(shell mkdir -p $(OUT_DIR))
 
 # Assembly flags
+ifeq ($(shell uname -s), Darwin)
 SFLAGS=-f macho64
+endif
+
+ifeq ($(shell uname -s), Linux)
+SFLAGS=-f elf64
+endif
+
 
 # C flags
 CFLAGS=-Wall -Wextra -Werror
@@ -31,7 +36,7 @@ CFLAGS=-Wall -Wextra -Werror
 include make/ww_crypto.mk
 include make/test.mk
 
-.PHONY: all clean fclean test
+.PHONY: all clean fclean
 
 all: $(WW_CRYPTO) $(TEST)
 
