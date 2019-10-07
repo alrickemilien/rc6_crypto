@@ -28,7 +28,7 @@ We decide here to implement **RC6** algorithm.
 
 ## Build
 
-Build requires **nasm 2.14**. Actually build works only on osx.
+Build requires **nasm >= 2.11**. Actually build works only on osx.
 Build generates `libww_crypto.so` into `./build` directory.
 
 ## Test
