@@ -8,13 +8,9 @@ ifeq ($(CCASM),)
 CCASM=~/.brew/bin/nasm
 endif
 
-NASM_VERSION=$(shell $(CCASM) -v | cut -d' ' -f3)
-
-# REAQUIRED_NSAM_VERSION=2.14.02
-
-# ifneq ($(NASM_VERSION), $(REAQUIRED_NSAM_VERSION))
-# $(error the actual version is $(NASM_VERSION), version $(REAQUIRED_NSAM_VERSION) required ...)
-# endif
+ifeq ($(RH_GT_5_3),true)
+CPPFLAGS += -DRH_GT_5_3=1
+endif
 
 OUT_DIR=./build
 
