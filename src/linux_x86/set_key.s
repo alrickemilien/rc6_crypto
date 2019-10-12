@@ -22,6 +22,9 @@ section .text
 _ww_set_key:
   
 _rc6_setkey:
+    push rbp
+	mov rbp, rsp
+
     pushad
     pop    rsi
     ; rdx=rc6 key

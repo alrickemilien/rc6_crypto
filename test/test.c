@@ -55,9 +55,9 @@ int test_set_key(void) {
 
         key_len = hex2bin(k, test_keys[i]);
 
-        printf("JE SUIS LA key_len %d\n", key_len);
+        printf("test_keys[%2d]: %64s - key_len %d\n", i, test_keys[i], key_len);
 
-        ww_set_key (&rc6_key, k, key_len);
+        ww_set_key(&rc6_key, k, key_len);
     }
 
     return (0);

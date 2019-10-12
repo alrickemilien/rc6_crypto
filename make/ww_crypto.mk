@@ -10,8 +10,7 @@ endif
 WW_CRYPTO=$(OUT_DIR)/libww_crypto.so
 
 ifeq ($(shell uname -s), Darwin)
-SRC=src/osx/encrypt.s \
-	src/osx/encrypt.s
+SRC=src/osx/rc6.s
 endif
 
 ifeq ($(shell uname -s), Linux)

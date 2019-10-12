@@ -38,3 +38,6 @@ During compilation, binary test is provided at `./build/test`.
 On OSX, just run `./build/test`
 On Linux platform, run `LD_LIBRARY_PATH=build/ ./build/test`
 
+## Sources for asm discover
+
+- [Functions tack and parameters](https://en.wikibooks.org/wiki/X86_Disassembly/Functions_and_Stack_Frames)
