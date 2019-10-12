@@ -14,8 +14,7 @@ SRC=src/osx/rc6.s
 endif
 
 ifeq ($(shell uname -s), Linux)
-SRC=src/linux_x86/encrypt.s \
-	src/linux_x86/set_key.s
+SRC=src/linux_x86/rc6.s
 endif
 
 OBJ=$(SRC:.s=.o)
