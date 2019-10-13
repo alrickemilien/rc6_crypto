@@ -46,59 +46,65 @@ __ww_set_key:
 ; rcx=key len
 
 rc6_setkey:
-    push rdi            ; x86_64 linux/osx machine passes function parameters in rdi, rsi, rdx, rcx, r8, and r9
+    push rdi                    ; x86_64 linux/osx machine passes function parameters in rdi, rsi, rdx, rcx, r8, and r9
     push rsi
     push rdx
 
-    pop     rcx         ; rcx=key len
-    pop     rsi         ; rsi=key bytes
-    pop     rdx         ; rdx=rc6 key
+    pop     rcx                 ; rcx=key len
+    pop     rsi                 ; rsi=key bytes
+    pop     rdx                 ; rdx=rc6 key
 
-    sub     rsp, rcx    ; Create local buffer of size rcx
+    sub     rsp, rcx            ; Create local buffer of size rcx
     mov     rdi, rsp
 
-                        ; mov eax, 0xA  ; set EAX to 0xA (1010 in binary)
-                        ; shr eax, 2    ; shifts 2 bits to the right in EAX, now equal to 0x2 (0010 in binary)
-    shr     ecx, 2      ; keylen/= 4
-    mov     rbx, rcx    ; save keylen/4
+                                ; mov eax, 0xA  ; set EAX to 0xA (1010 in binary)
+                                ; shr eax, 2    ; shifts 2 bits to the right in EAX, now equal to 0x2 (0010 in binary)
+    shr     ecx, 2              ; keylen/= 4
+    mov     rbx, rcx            ; save keylen/4
 
-                        ; copy to local buffer
-                        ; mov rdi string to rsi string
-    rep     movsd       ; rep repeats till rcx is 0
+                                ; copy to local buffer
+                                ; mov rdi string to rsi string
+    rep     movsd               ; rep repeats till rcx is 0
 
     mov     rax, RC6_P
     mov     rsi, rdx
     mov     rdi, rdx
     mov     rcx, RC6_KR
 init_key:
-    stosd               ; stosd stores a doubleword from the EAX register into the destination operand.    
+    stosd                       ; stosd stores a doubleword from the EAX register into the destination operand.    
     add     rax, RC6_Q
 
-    loop    init_key    ; Each time loop is executed, the count register is decremented, then checked for 0.
+    loop    init_key            ; Each time loop is executed, the count register is decremented, then checked for 0.
 
-    push    rpb         ; Save rpb, very very important
+    push    rbp                 ; Save rpb, very very important
 
-    xor    eax, eax     ; A=0
-    xor    ebx, ebx     ; B=0
-    xor    ebp, ebp     ; k=0
-    xor    edi, edi     ; i=0
-    xor    edx, edx     ; j=0
+    xor    eax, eax             ; A=0
+    xor    ebx, ebx             ; B=0
+    xor    ebp, ebp             ; k=0
+    xor    edi, edi             ; i=0
+    xor    edx, edx             ; j=0
     
-                        ; mov   eax, 0x5   ; eax = 0x5, SF = 0
-                        ; cdq              ; edx = 0x00000000
-                        ; mov   eax, 0x5   ; eax = 0x5
-                        ; neg   eax        ; eax = 0xFFFFFFFB, SF = 1
-                        ; cdq              ; edx = 0xFFFFFFFF
+                                ; mov   eax, 0x5   ; eax = 0x5, SF = 0
+                                ; cdq              ; edx = 0x00000000
+                                ; mov   eax, 0x5   ; eax = 0x5
+                                ; neg   eax        ; eax = 0xFFFFFFFB, SF = 1
+                                ; cdq              ; edx = 0xFFFFFFFF
     ; cdq                ; B=0
-setkey_loop:
-    ; A = key->S[i] = ROTL(key->S[i] + A+B, 3); 
-    add    eax, ebx
-    add    eax, [esi+edi*4]
-    rol    eax, 3
-    lea    ecx, [eax+ebx]
-    mov    [esi+edi*4], eax
 
-    ; B = L[j] = ROTL(L[j] + A+B, A+B);
+setkey_loop:                    ; A = key->S[i] = ROTL(key->S[i] + A+B, 3); 
+    add    eax, ebx             ; A+B
+    add    eax, [rsi + rdi * 4] ; key->S[i] + A+B (eax)
+    call debug
+
+    rol    eax, 3               ; rotate 3 bits left in eax
+    lea    ecx, [eax + ebx]
+
+    mov    [rsi + rdi * 4], eax
+
+    call debug
+
+
+                                ; B = L[j] = ROTL(L[j] + A+B, A+B);
     add    ebx, eax
     add    ebx, [rsp+4*rdx+4]
     rol    ebx, cl
@@ -163,116 +169,123 @@ rc6_encrypt:
     pop     rcx
     push    rcx
     ; mov     ecx, [esp+32+16] ; enc
-    jecxz   rc6_l1      ; It jumps to the specified location if ECX=0
+    jecxz   rc6_l1              ; It jumps to the specified location if ECX=0
     
     ; B += key->x[0];
-    add     B, [edi]
+    add     _B, [edi]
     scasd
 
     ; D += key->x[1];
-    add     D, [edi]
-    jmp     r6c_l2
+    add     _D, [edi]
+    jmp     rc6_l2
 rc6_l1:
-    lea    edi, [edi+rcx*8+12]  ; move to end of key
+    lea    edi, [edi+ecx*8+12]  ; move to end of key
 
-                            ; load backwards
-    std                     ; Operation:1 -> DF
+                                ; load backwards
+    std                         ; Operation:1 -> DF
     
     ; C -= key->x[43];
-    sub    C, [edi]
+    sub    _C, [edi]
     
     ; A -= key->x[42];
     scasd
-    sub    A, [edi]
-    xchg   D, A
-    xchg   C, B
+    sub    _A, [edi]
+    xchg   _D, _A
+    xchg   _C, _B
 rc6_l2:
     scasd
 rc6_l3:
-    push   eax
-    push   ecx
-    dec    ecx
-    pushfd
+    push   rax
+    push   rcx
+    dec    rcx
+    pushfq
     
     ; T0 = ROTL(B * (2 * B + 1), 5);
-    lea    eax, [B+B+1]
-    imul   eax, B
+    lea    eax, [_B+_B+1]
+    imul   eax, _B
     rol    eax, 5
     ; T1 = ROTL(D * (2 * D + 1), 5);
-    lea    ecx, [D+D+1]
-    imul   ecx, D
+    lea    ecx, [_D+_D+1]
+    imul   ecx, _D
     rol    ecx, 5
-    popfd
-    jnz    r6c_l4
+    popfq
+    jnz    rc6_l4
 
     ; A = ROTL(A ^ T0, T1) + key->x[i];
-    xor    A, eax
-    rol    A, cl
-    add    A, [edi]  ; key->x[i]
+    xor    _A, eax
+    rol    _A, cl
+    add    _A, [edi]  ; key->x[i]
     scasd
     ; C = ROTL(C ^ T1, T0) + key->x[i+1];
-    xor    C, ecx
+    xor    _C, ecx
     xchg   eax, ecx
-    rol    C, cl
-    add    C, [edi]  ; key->x[i+1]
-    jmp    r6c_l5
-r6c_l4:    
+    rol    _C, cl
+    add    _C, [edi]  ; key->x[i+1]
+    jmp    rc6_l5
+rc6_l4:    
     ; B = ROTR(B - key->x[i + 1], t) ^ u;
-    sub    C, [edi]
+    sub    _C, [edi]
     scasd
-    ror    C, cl   ; t
-    xor    C, eax  ; u
+    ror    _C, cl   ; t
+    xor    _C, eax  ; u
     ; D = ROTR(D - key->x[i], u) ^ t;
     xchg   eax, ecx ; swap u and t
-    sub    A, [edi]
-    ror    A, cl   ; u
-    xor    A, eax  ; t
-r6c_l5:
+    sub    _A, [edi]
+    ror    _A, cl   ; u
+    xor    _A, eax  ; t
+rc6_l5:
     scasd
     ; swap
-    xchg   D, eax
-    xchg   C, eax
-    xchg   B, eax
-    xchg   A, eax
-    xchg   D, eax
+    xchg   _D, eax
+    xchg   _C, eax
+    xchg   _B, eax
+    xchg   _A, eax
+    xchg   _D, eax
     ; decrease counter
-    pop    ecx
-    pop    eax
-    dec    eax    ; _I--
-    jnz    r6c_l3
+    pop    rcx
+    pop    rax
+    dec    rax    ; _I--
+    jnz    rc6_l3
 
-    jecxz  r6c_l6
+    jecxz  rc6_l6
     ; out[0] += key->x[42];
-    add    A, [edi]
+    add    _A, [edi]
     ; out[2] += key->x[43];
-    add    C, [edi+4]
-    jmp    r6c_l7
-r6c_l6:
-    xchg   D, A
-    xchg   C, B
+    add    _C, [edi+4]
+    jmp    rc6_l7
+rc6_l6:
+    xchg   _D, _A
+    xchg   _C, _B
     ; out[3] -= key->x[1];
-    sub    D, [edi]
+    sub    _D, [edi]
     ; out[1] -= key->x[0];
-    sub    B, [edi-4]
+    sub    _B, [edi-4]
     cld
     
-r6c_l7:
+rc6_l7:
     ; save ciphertext
     mov    edi, [esp+32+12] ; output
-    xchg   eax, A
+    xchg   eax, _A
     stosd
-    xchg   eax, B
+    xchg   eax, _B
     stosd
-    xchg   eax, C
+    xchg   eax, _C
     stosd
-    xchg   eax, D
+    xchg   eax, _D
     stosd
-    popad
+
+    ; The registers are loaded in the following order: EDI, ESI, EBP, EBX, EDX, ECX
+    pop rdi
+    pop rsi
+    pop rbp
+    pop rbx
+    pop rdx
+    pop rcx
 
 rc6_return:
     ret
     
-.debug:
+debug:
     push    rax
     push    rdx
     mov     rax, 0x2000004 ; write
