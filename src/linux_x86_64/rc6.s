@@ -42,7 +42,7 @@ global __ww_set_key:function
 _ww_set_key:
     push rbp
     mov rbp, rsp
-    and rsp, 0xfffffff0 ; Align the stack to allow library calls
+    ; and rsp, 0xfffffff0 ; Align the stack to allow library calls
 
 _rc6_setkey:
 rc6_setkey:
@@ -50,16 +50,16 @@ rc6_setkey:
     push rsi
     push rdx
 
-    pop rcx             ; rdx=rc6 key
-    pop rsi             ; rsi=key bytes
-    pop rdx             ; rcx=key len
-
+    pop     rcx         ; rcx=key len
+    pop     rsi         ; rsi=key bytes
+    pop     rdx         ; rdx=rc6 key
 
     sub     rsp, rcx    ; Create local buffer of size rcx
     mov     rdi, rsp
+
                         ; mov eax, 0xA  ; set EAX to 0xA (1010 in binary)
                         ; shr eax, 2    ; shifts 2 bits to the right in EAX, now equal to 0x2 (0010 in binary)
-    shr     rcx, 2      ; keylen/= 4
+    shr     ecx, 2      ; keylen/= 4
     mov     rbx, rcx    ; save keylen/4
 
                         ; copy to local buffer
@@ -71,30 +71,33 @@ rc6_setkey:
     mov     rdi, rdx
     mov     rcx, RC6_KR
 init_key:
-    stosd               ; stosd stores a doubleword from the EAX register into the destination operand.    
-    add    rax, RC6_Q
+    stosd                ; stosd stores a doubleword from the EAX register into the destination operand.    
+    add     rax, RC6_Q
 
-    loop   init_key     ; Each time loop is executed, the count register is decremented, then checked for 0.
+    loop    init_key     ; Each time loop is executed, the count register is decremented, then checked for 0.
 
-    xor    edi, edi     ; i=0
-    xor    ebp, ebp     ; j=0
+    push    rbp          ; Save rpb, very very important
 
-    xchg   ecx, eax     ; A=0
-
+    xor    eax, eax    ; A=0
+    xor    ebx, ebx    ; B=0
+    xor    ebp, ebp    ; k=0
+    xor    edi, edi    ; i=0
+    xor    edx, edx    ; j=0
+    
                         ; mov   eax, 0x5   ; eax = 0x5, SF = 0
                         ; cdq              ; edx = 0x00000000
                         ; mov   eax, 0x5   ; eax = 0x5
                         ; neg   eax        ; eax = 0xFFFFFFFB, SF = 1
                         ; cdq              ; edx = 0xFFFFFFFF
-    cdq                ; B=0
+    ; cdq                ; B=0
     
+setkey_loop:
+    ; A = key->S[i] = ROTL(key->S[i] + A+B, 3); 
 
-    mov    ch, (-RC6_KR*3) & 255
-
-    call debug
-    
-    mov rsp, rbp
-    pop rbp
+setkey_loop_end:
+    pop     rbp         ; retrieve top stack pointeur, that was change during 
+                        ; mov   rsp, rbp
+    leave               ; pop   rbp
     ret
 
 debug:
@@ -105,8 +108,7 @@ debug:
     lea     rsi, [rel msg]
     mov     rdx, msg.len
     syscall
-    mov rsp, rbp
-    pop rbp
+    leave
     ret     ; pops the last value from the stack, which supposed to be the returning address, and assigned it to IP register
 
 section .data

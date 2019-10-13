@@ -14,7 +14,7 @@ SRC=src/osx/rc6.s
 endif
 
 ifeq ($(shell uname -s), Linux)
-SRC=src/linux_x86/rc6.s
+SRC=src/linux_x86_64/rc6.s
 endif
 
 OBJ=$(SRC:.s=.o)
