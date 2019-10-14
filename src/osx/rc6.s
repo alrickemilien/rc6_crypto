@@ -63,7 +63,7 @@ rc6_setkey:
     mov     rbx, rcx            ; save keylen/4
 
                                 ; copy to local buffer
-                                ; mov rdi string to rsi string
+                                ; mov rsi string to rdi string
     rep     movsd               ; rep repeats till rcx is 0
 
     mov     rax, RC6_P
@@ -285,17 +285,28 @@ rc6_l7:
 rc6_return:
     ret
     
-debug:
+debug:                     ; All those push and pop prevents from other register modification side effect
+    push    rbp
+    mov     rbp, rsp
+    push    rbx
+    push    rcx
+    push    rdi
+    push    rsi
     push    rax
     push    rdx
-    mov     rax, 0x2000004 ; write
-    mov     rdi, 1 ; stdout
+    mov     rax, 0x2000004  ; write
+    mov     rdi, 1          ; stdout
     lea     rsi, [rel msg]
     mov     rdx, msg.len
     syscall
     pop     rdx
     pop     rax
-    ret     ; pops the last value from the stack, which supposed to be the returning address, and assigned it to IP register
+    pop     rsi
+    pop     rdi
+    pop     rcx
+    pop     rbx    
+    leave
+    ret                     ; pops the last value from the stack, which supposed to be the returning address, and assigned it to IP register
 
 section .data
     default rel
