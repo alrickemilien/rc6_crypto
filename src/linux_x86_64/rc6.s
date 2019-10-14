@@ -39,8 +39,6 @@ rc6_setkey:                     ; void*,void*,uint32_t
     pop     rsi                 ; rsi=key bytes
     pop     rdx                 ; rdx=rc6 key
 
-    call debug
-
     sub     rsp, rcx            ; Create local buffer of size rcx
     mov     rdi, rsp
 
@@ -54,50 +52,44 @@ rc6_setkey:                     ; void*,void*,uint32_t
     rep     movsd               ; rep repeats till rcx is 0
 
     mov     eax, RC6_P
-    mov     esi, edx
-    mov     edi, edx
+    mov     rsi, rdx            ; Use x86_64 registers over x86 because we are working with adresses
+    mov     rdi, rdx
     mov     cl, RC6_KR
 init_key:
-    stosd                       ; stosd stores a doubleword from the EAX register into the destination operand.
-    add     rax, RC6_Q
+    stosd                       ; stosd stores a doubleword from the EAX register into the ESI operand.
+
+    add     eax, RC6_Q
 
     loop    init_key            ; Each time loop is executed, the count register is decremented, then checked for 0.
 
     push    rbp                 ; Save rpb, very very important
 
-    xor    eax, eax             ; A=0
-    xor    ebx, ebx             ; B=0
-    xor    ebp, ebp             ; k=0
-    xor    edi, edi             ; i=0
-    xor    edx, edx             ; j=0
+    xor    rdi, rdi             ; rdi=i=0
+    xor    rbp, rbp             ; rbp=j=0
     
-                                ; mov   eax, 0x5   ; eax = 0x5, SF = 0
-                                ; cdq              ; edx = 0x00000000
-                                ; mov   eax, 0x5   ; eax = 0x5
-                                ; neg   eax        ; eax = 0xFFFFFFFB, SF = 1
-                                ; cdq              ; edx = 0xFFFFFFFF
-    ; cdq                ; B=0
+    xor    eax, eax             ; eax=A=0
+    xor    edx, edx             ; edx=B=0
 
-; setkey_loop:                    ; A = key->S[i] = ROTL(key->S[i] + A+B, 3); 
-;     add    eax, ebx             ; A+B
-;     add    eax, [rsi + rdi * 4] ; key->S[i] + A+B (eax)
-;     call debug
+    mov    ch, (-RC6_KR*3) & 255
 
-;     rol    eax, 3               ; rotate 3 bits left in eax
-;     lea    ecx, [eax + ebx]
+setkey_loop:
+                                    ; A = key->S[i] = ROTL(key->S[i] + A+B, 3); 
+    add    eax, ebx                 ; A=A+B
+    add    eax, [rsi + rdi * 4]     ; A=A+key->S[i]
+    rol    eax, 3                   ; rotate 3 bits left in eax
+    mov    [rsi + rdi * 4], eax     ; put eax value at key->S[i]
 
-;     mov    [rsi + rdi * 4], eax
+                                    ; B = L[j] = ROTL(L[j] + A+B, A+B);
+    add    edx, eax                 ; B=B+A
+    mov    cl, bl
 
-;     call debug
+    add    edx, [rsp + 4 * rbp]     ; B=B+L[j]
 
+    rol    edx, cl                  ; B=ROTL(B, )
+    call debug
+    mov    [rsp + 4 * rbp], edx     ; L[j]=B
 
-;                                 ; B = L[j] = ROTL(L[j] + A+B, A+B);
-;     add    ebx, eax
-;     add    ebx, [rsp+4*rdx+4]
-;     rol    ebx, cl
-;     mov    [rsp+4*rdx+4], ebx
-
-;     inc    edi          ; i++
+    inc    edi          ; i++
 
 ;     ; i %= (RC6_ROUNDS*2)+4
 ;     cmp    edi, RC6_KR
