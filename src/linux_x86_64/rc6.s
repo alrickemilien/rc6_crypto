@@ -39,8 +39,11 @@ rc6_setkey:                     ; void*,void*,uint32_t
     pop     rsi                 ; rsi=key bytes
     pop     rdx                 ; rdx=rc6 key
 
+    push    rsp                 ; Save rpb, very very important
+
     sub     rsp, rcx            ; Create local buffer of size rcx
     mov     rdi, rsp
+
 
                                 ; mov eax, 0xA  ; set EAX to 0xA (1010 in binary)
                                 ; shr eax, 2    ; shifts 2 bits to the right in EAX, now equal to 0x2 (0010 in binary)
@@ -62,8 +65,6 @@ init_key:
 
     loop    init_key            ; Each time loop is executed, the count register is decremented, then checked for 0.
 
-    push    rbp                 ; Save rpb, very very important
-
     xor    rdi, rdi             ; rdi=i=0
     xor    rbp, rbp             ; rbp=j=0
     
@@ -82,17 +83,14 @@ setkey_loop:
                                     ; B = L[j] = ROTL(L[j] + A+B, A+B);
     add    edx, eax                 ; B=B+A
     mov    cl, bl
-
     add    edx, [rsp + 4 * rbp]     ; B=B+L[j]
-
     rol    edx, cl                  ; B=ROTL(B, )
-    call debug
     mov    [rsp + 4 * rbp], edx     ; L[j]=B
 
     inc    edi          ; i++
 
-;     ; i %= (RC6_ROUNDS*2)+4
-;     cmp    edi, RC6_KR
+                                    ; i %= (RC6_ROUNDS*2)+4
+    cmp    edi, RC6_KR
 
 ;     sbb    ecx, ecx     ; The sbb edx, edx statement writes either 0 or -1 to edx, depending only on the value of the carry flag. 
 ;     and    edi, ecx
@@ -107,8 +105,11 @@ setkey_loop:
 ;     cmp    ebp, RC6_KR*3
 ;     jne    setkey_loop
 setkey_loop_return:
+    call debug
+
     pop     rbp         ; retrieve top stack pointeur, that was change during 
     leave               ; mov   rsp, rbp \n pop   rbp
+
     ret
 
 debug:                     ; All those push and pop prevents from other register modification side effect
@@ -130,7 +131,7 @@ debug:                     ; All those push and pop prevents from other register
     pop     rsi
     pop     rdi
     pop     rcx
-    pop     rbx    
+    pop     rbx   
     leave
     ret
 
