@@ -23,7 +23,7 @@ void        _ww_set_key(RC6_KEY*, void*, uint32_t);
 void        _ww_crypt(RC6_KEY*, void*, void*, int);
 
 #define ww_set_key(x, y, z) _ww_set_key(x, y, z)
-#define ww_encrypt(x, y) _ww_crypt(x, y, RC6_ENCRYPT)
-#define ww_decrypt(x, y) _ww_crypt(x, y, RC6_DECRYPT)
+#define ww_encrypt(x, y, z) _ww_crypt(x, y, z, RC6_ENCRYPT)
+#define ww_decrypt(x, y, z) _ww_crypt(x, y, z, RC6_DECRYPT)
 
 #endif

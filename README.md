@@ -1,9 +1,10 @@
-The projects implements symmetric encrypt / decrypt functions with algorithm built through asm, for discovering purposes
+The projects implements symmetric encrypt / decrypt functions with algorithm built through Intel assembly, for discovering purposes
 
 - Encryption must use external or self generated key.
 - Decryption execution must be insignificant.
 - Crypto functions must work for big and little endian.
 - Crypto functions must work on i384 and x64.
+- Use of Intel assembly
 
 The possible implementation are the following :
 
@@ -41,16 +42,18 @@ On Linux platform, run `LD_LIBRARY_PATH=build/ ./build/test`
 ## GDB
 
 ```
-gdb
-set environment LD_LIBRARY_PATH=./build
-set disassembly-flavor intel
-run
-b <function>
+gdb                                     # Start gdb
+set environment LD_LIBRARY_PATH=./build # For linux
+set disassembly-flavor intel            # Set gdb for Intel assembly
+file ./build/test                       # Use test binary
+run                                     # Run the program test
+b <function>                            # Set a breakpoint for <function>
 ...
 b <function>
-run
+run                                     # Re-run the program test from start
+c                                       # Next breakpoint
 c
-c
+make                                    # You can direclty rebuild through gdb
 ...
 ```
 
