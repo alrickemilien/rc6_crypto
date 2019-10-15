@@ -38,6 +38,22 @@ During compilation, binary test is provided at `./build/test`.
 On OSX, just run `./build/test`
 On Linux platform, run `LD_LIBRARY_PATH=build/ ./build/test`
 
+## GDB
+
+```
+gdb
+set environment LD_LIBRARY_PATH=./build
+set disassembly-flavor intel
+run
+b <function>
+...
+b <function>
+run
+c
+c
+...
+```
+
 ## Sources for asm discover
 
 - [Functions tack and parameters](https://en.wikibooks.org/wiki/X86_Disassembly/Functions_and_Stack_Frames)
