@@ -42,6 +42,9 @@ rc6_setkey:                     ;global __ww_set_key:function
 brkp1:
     sub     rsp, rcx            ; Create local buffer of size RCX
     mov     rdi, rsp
+
+    push    rcx
+
                                 ; mov eax, 0xA  ; set EAX to 0xA (1010 in binary)
                                 ; shr eax, 2    ; shifts 2 bits to the right in EAX, now equal to 0x2 (0010 in binary)
     shr     ecx, 2              ; keylen/= 4
@@ -67,28 +70,28 @@ init_key:
     mov    ch, (-RC6_KR*3) & 255
 setkey_loop:
     add    eax, ebx                 ; A=A+B
-    ; add    eax, [rsi + rdi * 4]     ; A=A+key->S[i]
+    add    eax, [rsi + rdi * 4]     ; A=A+key->S[i]
     rol    eax, 3                   ; rotate 3 bits left in EAX
-    ; mov    [rsi + rdi * 4], eax     ; key->S[i]=A
+    mov    [rsi + rdi * 4], eax     ; key->S[i]=A
     
 brkp2:
                                     ; B = L[j] = ROTL(L[j] + A+B, A+B);
     add    edx, eax                 ; B=B+A
     mov    cl, dl                   ; Stroe A+B in cl
-    ; add    edx, [rsp + 4 + 4 * rbp]     ; B=B+L[j]
+    add    edx, [rsp + 8 + 4 * rbp]     ; B=B+L[j]
     rol    edx, cl                  ; B=ROTL(B, A+B)
-    ; mov    [rsp + 4 + 4 * rbp], edx     ; L[j]=B
+    mov    [rsp + 8 + 4 * rbp], edx     ; L[j]=B
     
     inc    edi                      ; i++
                                     ; i %= (RC6_ROUNDS*2)+4
     
     cmp    edi, RC6_KR              ; Store cmp value beteween EDI and RC6_KR
 setkey_loop_return:
+    pop     rcx
+    add     rsp, rcx
     pop     rbp
     leave                           ; mov   rsp, rbp \n pop   rbp
     ret
 
 section .data
     default rel
-    msg: db "Hello, world!!!!!!!!", 10
-    .len: equ $-msg
