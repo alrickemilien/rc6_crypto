@@ -7,6 +7,14 @@ ifeq ($(shell [ $(NASM_VER_MAJOR) -lt 2 -o $(NASM_VER_MINOR) -lt 11 ] && echo tr
 $(error the actual version is $(NASM_VER_NUM), version >= $(NASM_VER_MAJOR).$(NASM_VER_MINOR) required ...)
 endif
 
+ifeq ($(shell uname -s), Darwin)
+SFLAGS=-f macho64
+endif
+
+ifeq ($(shell uname -s), Linux)
+SFLAGS=-f elf64
+endif
+
 WW_CRYPTO=$(OUT_DIR)/libww_crypto.so
 
 ifeq ($(shell uname -s), Darwin)

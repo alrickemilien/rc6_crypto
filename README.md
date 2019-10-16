@@ -54,6 +54,7 @@ run                                     # Re-run the program test from start
 c                                       # Next breakpoint
 c
 make                                    # You can direclty rebuild through gdb
+info registers rbp rsp rax eax rsi esi
 ...
 ```
 

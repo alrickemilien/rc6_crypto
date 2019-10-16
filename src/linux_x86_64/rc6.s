@@ -113,13 +113,155 @@ global __ww_crypt:function
 _ww_crypt:
     push rbp        ; function prolog
     mov rbp, rsp
-crypt:              ; x86_64 linux/osx machine passes function parameters in RDI, RSI, RDX, RCX, R8, and R9
-    push    rdi     ; rc6_key
-    push    rsi     ; input
-    push    rdx     ; output
-    push    rcx     ; encrypt/decrypt mode
+
+    ; rdi => rc6_key
+    ; rsi => input
+    ; rdx => output
+    ; rcx => encrypt/decrypt mode
+crypt:                          ; x86_64 parameters order is RDI, RSI, RDX, RCX, R8, and R9
+    push    rdx                 ; output
+    push    rcx                 ; encrypt/decrypt mode
+    push    rsi                 ; input
+    push    rdi                 ; rc6_key
+    push    rbp                 ; Save RBP because now it is used for D
+load_ciphertext:
+    lodsd                       ; loadsd load doubleword at address DS:(E)SI into EAX
+    xchg   eax, D
+    lodsd
+    xchg   eax, B
+    lodsd
+    xchg   eax, C
+    lodsd
+    xchg   eax, D
+    xchg   eax, A
+crypt_l0:
+    mov    eax, RC6_ROUNDS
+    mov    ecx, [rsp + 8 * 3]   ; Get the encrypt/decrypt mode access pshed rcx
+    jecxz  crypt_l1
+
+    add    B, [rdi]             ; B += key->x[0];
+    scasd                       ; compares doubleword using ES:(E)DI register with the value in EAX, then sets status flags in EFLAGS
+
+    add    D, [rdi]             ; D += key->x[1];
+    jmp    crypt_l2
+crypt_l1:
+    lea    edi, [rdi + rax * 8 + 12]    ; move to end of key
+    std                                 ; load backwards
+    
+    sub    C, [rdi]                     ; C -= key->x[43];
+
+    scasd                               ; compares doubleword using ES:(E)DI register with the value in EAX, then sets status flags in EFLAGS
+    sub    A, [rdi]                     ; A -= key->x[42];
+    xchg   D, A
+    xchg   C, B
+crypt_l2:
+    scasd
+crypt_l3:
+    push    rax
+    push    rcx
+    dec     rcx
+    
+    push    rax
+    push    rcx
+    push    rdx
+    push    rbx
+    push    rsp
+    push    rbp
+    push    rsi
+    push    rdi
+    
+                            ; T0 = ROTL(B * (2 * B + 1), 5);
+    lea     eax, [B+B+1]    ; T0=2*B+1
+    imul    eax, B          ; T0=B*TO
+    rol     eax, 5          ; T0=ROTL(T0, 5)
+    
+                            ; T1 = ROTL(D * (2 * D + 1), 5);
+    lea     ecx, [D+D+1]    ;
+    imul    ecx, D          ;
+    rol     ecx, 5          ;
+    pop     rdi
+    pop     rsi
+    pop     rbp
+    pop     rsp
+    pop     rbx
+    pop     rdx
+    pop     rcx
+    pop     rax
+
+    jnz    crypt_l4
+
+                        ; A = ROTL(A ^ T0, T1) + key->x[i];
+    xor    A, eax       ; A=A^T0
+    rol    A, cl        ; A=ROTL(A)
+    add    A, [rdi]     ; A=A+key->x[i]
+    scasd
+    
+                        ; C=ROTL(C ^ T1, T0) + key->x[i+1];
+    xor    C, ecx       ; C=C^T1
+    xchg   eax, ecx     ; switch T0 and T1
+    rol    C, cl        ; C=ROTL(C, T0)
+    add    C, [rdi]     ; C=C+key->x[i+1]
+    
+    jmp    crypt_l5
+crypt_l4:    
+                        ; B = ROTR(B - key->x[i + 1], t) ^ u;
+    sub    C, [edi]
+    scasd
+    ror    C, cl        ; t
+    xor    C, eax       ; u
+    
+                        ; D = ROTR(D - key->x[i], u) ^ t;
+    xchg   eax, ecx     ; swap u and t
+    sub    A, [edi]
+    ror    A, cl        ; u
+    xor    A, eax       ; t
+crypt_l5:
+    scasd
+    
+    ; swap
+    xchg   D, eax
+    xchg   C, eax
+    xchg   B, eax
+    xchg   A, eax
+    xchg   D, eax
+    
+    ; decrease counter
+    pop    rcx
+    pop    rax
+    dec    eax          ; _I--
+    
+    jnz    crypt_l3
+
+    jecxz  crypt_l6
+    
+    add    A, [rdi]     ; out[0] += key->x[42];
+    add    C, [rdi+4]   ; out[2] += key->x[43];
+    jmp    crypt_l7
+crypt_l6:
+    xchg   D, A
+    xchg   C, B
+    sub    D, [rdi]     ; out[3] -= key->x[1];
+    sub    B, [rdi-4]   ; out[1] -= key->x[0];
+    cld
+crypt_l7:                   ; save ciphertext
+    ; mov    edi, [esp+32+12] ; output
+    xchg   eax, A
+    stosd
+    xchg   eax, B
+    stosd
+    xchg   eax, C
+    stosd
+    xchg   eax, D
+    stosd
+    ; popad
 crypt_return:
-    leave
+    pop     rbp
+    pop     rdi
+    pop     rsi
+    pop     rcx
+    pop     rdx
+
+    leave           ; mov   rsp, rbp \n pop   rbp
     ret
 
 section .data
