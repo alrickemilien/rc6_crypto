@@ -31,4 +31,4 @@ $(WW_CRYPTO): $(OBJ)
 	$(CC) -shared $^ -o $@ $(CFLAGS)
 
 %.o: %.s
-	$(CCASM) $(SFLAGS) $< -o $@
+	$(CCASM) -g $(SFLAGS) $< -o $@
