@@ -40,20 +40,45 @@ On Linux platform, run `LD_LIBRARY_PATH=build/ ./build/test`
 
 ## GDB
 
+Example on how to use GDB to debug library.
+
 ```
 gdb
-set environment LD_LIBRARY_PATH=./build
-set disassembly-flavor intel
+set environment LD_LIBRARY_PATH=./build # Only for shared librarys
+set disassembly-flavor intel            # Set syntax as x86 assembly
+file test_X                             # Debug the file test_X
 run
-b <function>
+b <function1>                           # Set a breakpoint on <function1> 
 ...
-b <function>
+b <function1>
 run
+c                                        # Keep running to the next breakpoint
 c
-c
+info registers rdi rsi rax rbx rcx       # Gives infos on bunch of registers
+make re                                 # You can direclty run shell commands from GDB
 ...
 ```
 
+## LLDB
+
+Example on how to use LLDB to debug library on osx.
+All LLDB doc is [here](https://lldb.llvm.org/use/map.html).
+
+```
+lldb
+settings set target.x86-disassembly-flavor intel            # Set syntax as x86 assembly
+file test_X                             # Debug the file test_X
+run
+b <function1>                           # Set a breakpoint on <function1> 
+...
+b <function1>
+run
+c                                        # Keep running to the next breakpoint
+c
+register read rdi rsi rax rbx rcx       # Gives infos on bunch of registers
+platform shell make re                  # Run shell command with platform shell <command> <param1> <param2> ...
+...
+```
 ## Sources for asm discover
 
 - [Functions tack and parameters](https://en.wikibooks.org/wiki/X86_Disassembly/Functions_and_Stack_Frames)
