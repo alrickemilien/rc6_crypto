@@ -19,11 +19,17 @@ typedef struct _RC6_KEY {
   uint32_t x[RC6_KR];
 } RC6_KEY;
 
-void        _ww_set_key(RC6_KEY*, void*, uint32_t);
-void        _ww_crypt(RC6_KEY*, void*, void*, int);
 
+// Compat linux
+# ifndef __MACH__
 #define ww_set_key(x, y, z) _ww_set_key(x, y, z)
-#define ww_encrypt(x, y) _ww_crypt(x, y, RC6_ENCRYPT)
-#define ww_decrypt(x, y) _ww_crypt(x, y, RC6_DECRYPT)
+#define ww_crypt(v, x, y, z) _ww_crypt(v, x, y, z)
+# endif
+
+#define ww_encrypt(x, y, z) ww_crypt(x, y, z, RC6_ENCRYPT)
+#define ww_decrypt(x, y, z) ww_crypt(x, y, z, RC6_DECRYPT)
+
+void        ww_set_key(RC6_KEY*, void*, uint32_t);
+void        ww_crypt(RC6_KEY*, void*, void*, int);
 
 #endif

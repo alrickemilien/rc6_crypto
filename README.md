@@ -1,9 +1,10 @@
-The projects implements symmetric encrypt / decrypt functions with algorithm built through asm, for discovering purposes
+The projects implements symmetric encrypt / decrypt functions with algorithm built through Intel assembly, for discovering purposes
 
 - Encryption must use external or self generated key.
 - Decryption execution must be insignificant.
 - Crypto functions must work for big and little endian.
 - Crypto functions must work on i384 and x64.
+- Use of Intel assembly
 
 The possible implementation are the following :
 
