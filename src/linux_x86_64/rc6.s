@@ -54,30 +54,33 @@ sk:
     mov     eax, RC6_P
     mov     rsi, rdx            ; Use x86_64 registers over x86 because we are working with adresses
     mov     rdi, rdx
-    mov     cl, RC6_KR
+    mov     rcx, RC6_KR
 sk_init:
     stosd                       ; stosd stores a doubleword from the EAX register into the ESI operand.
     add     eax, RC6_Q
-    loop    sk_init             ; Each time loop is executed, the count register is decremented, then checked for 0.
+    loop    sk_init             ; Each time loop is executed, the RCX is decremented, then checked for 0.
     
-    xor    rdi, rdi             ; RDI=i=0
-    xor    rbp, rbp             ; RBP=j=0
-    xor    eax, eax             ; EAX=A=0
-    xor    edx, edx             ; EDX=B=0
-    
-    mov    ch, (-RC6_KR*3) & 255
+
+    xor    eax, eax    ; EAX=A=0
+    xor    ebx, ebx    ; EBX=B=0
+    xor    ebp, ebp    ; EBP=k=0
+    xor    edi, edi    ; EDI=i=0
+    xor    edx, edx    ; EDX=j=0
+
+    ; mov    ch, (-RC6_KR*3) & 255
 sk_l1:
     add    eax, ebx                 ; A=A+B
     add    eax, [rsi + rdi * 4]     ; A=A+key->S[i]
     rol    eax, 3                   ; rotate 3 bits left in EAX
+    lea    ecx, [eax + ebx]         ; store A+B into ECX
     mov    [rsi + rdi * 4], eax     ; key->S[i]=A
     
                                     ; B = L[j] = ROTL(L[j] + A+B, A+B);
-    add    edx, eax                 ; B=B+A
+    add    ebx, eax                 ; B=B+A
     mov    cl, dl                   ; Stroe A+B in cl
-    add    edx, [rsp + 8 + rbp * 4] ; B=B+L[j]
-    rol    edx, cl                  ; B=ROTL(B, A+B)
-    mov    [rsp + 8 + rbp * 4], edx ; L[j]=B
+    add    ebx, [rsp + 8 + rbp * 4] ; B=B+L[j]
+    rol    ebx, cl                  ; B=ROTL(B, A+B)
+    mov    [rsp + 8 + rbp * 4], ebx ; L[j]=B
     
     inc    edi                      ; i++
                                     
