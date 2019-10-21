@@ -25,18 +25,21 @@ extern  _GLOBAL_OFFSET_TABLE_  ; Each code module in your shared library should 
 global _ww_set_key:function
 global __ww_set_key:function
 
-_ww_set_key:                    
-    push rbp                    ; function prolog
-    mov rbp, rsp
-sk:
+_ww_set_key:
+    push    rbp                 ; function prolog
+    mov     rbp, rsp
+sk:                             ; STACKINFO: rbp
     push    rdi                 ; x86_64 linux/osx machine passes function parameters in RDI, RSI, RDX, RCX, R8, and R9
     push    rsi
     push    rdx
 
+                                ; STACKINFO: rbp, rdi, rsi, rdx
+
     pop     rcx                 ; RCX=key len
     pop     rsi                 ; RSI=key bytes
     pop     rdx                 ; RDX=rc6 key
-    push    rbp
+
+                                ; STACKINFO: rbp
 
     sub     rsp, rcx            ; Create local buffer of size RCX
     mov     rdi, rsp
@@ -46,9 +49,9 @@ sk:
                                 ; mov eax, 0xA  ; set EAX to 0xA (1010 in binary)
                                 ; shr eax, 2    ; shifts 2 bits to the right in EAX, now equal to 0x2 (0010 in binary)
     shr     ecx, 2              ; keylen/= 4
-    mov     ebx, ecx            ; save keylen/4 into EBX
-                                ; copy to local buffer
-                                ; mov rsi string to rdi string
+
+                                ; STACKINFO: rcx
+                        
     rep     movsd               ; rep repeats till RCX is 0
     
     mov     eax, RC6_P
@@ -59,13 +62,12 @@ sk_init:
     stosd                       ; stosd stores a doubleword from the EAX register into the ESI operand.
     add     eax, RC6_Q
     loop    sk_init             ; Each time loop is executed, the RCX is decremented, then checked for 0.
-    
 
-    xor    eax, eax    ; EAX=A=0
-    xor    ebx, ebx    ; EBX=B=0
-    xor    ebp, ebp    ; EBP=k=0
-    xor    edi, edi    ; EDI=i=0
-    xor    edx, edx    ; EDX=j=0
+    xor     eax, eax            ; EAX=A=0
+    xor     ebx, ebx            ; EBX=B=0
+    xor     ebp, ebp            ; EBP=k=0
+    xor     edi, edi            ; EDI=i=0
+    xor     edx, edx            ; EDX=j=0
 
     ; mov    ch, (-RC6_KR*3) & 255
 sk_l1:
@@ -77,32 +79,36 @@ sk_l1:
     
                                     ; B = L[j] = ROTL(L[j] + A+B, A+B);
     add    ebx, eax                 ; B=B+A
-    mov    cl, dl                   ; Stroe A+B in cl
-    add    ebx, [rsp + 8 + rbp * 4] ; B=B+L[j]
-    rol    ebx, cl                  ; B=ROTL(B, A+B)
-    mov    [rsp + 8 + rbp * 4], ebx ; L[j]=B
+    add    ebx, [rsp + 4 + rbp * 4] ; B=B+L[j]
+    rol    ebx, cl                  ; B=ROTL(B, A+B) cl is the part of ecx where is stored A+B
+    mov    [rsp + 4 + rbp * 4], ebx ; L[j]=B
     
     inc    edi                      ; i++
-                                    
+
                                     ; i %= (RC6_ROUNDS*2)+4
-    cmp    edi, RC6_KR              ; Store cmp value beteween EDI and RC6_KR
-    jb     sk_l2
-    xor    edi, edi                 ; i=0
-sk_l2:
-    inc    ebp                      ; j++    
-                                    
-                                    ; j %= RC6_KEYLEN/4
-    cmp    ebp, ebx
-    jb     sk_l3
-    xor    ebp, ebp                 ; j=0
-sk_l3:
-    inc    ch
-    jnz    sk_l1
-sk_return:
-    pop     rcx
-    add     rsp, rcx
-    pop     rbp
-    leave                           ; mov   rsp, rbp \n pop   rbp
+    cmp    edi, RC6_KR  
+    sbb    ecx, ecx                 ; Adds second operand and the CF flag,
+                                    ; then subtracts the result from first operand.
+                                    ; Result of the subtraction is stored in the second operand. 
+    and    edi, ecx
+
+    ; j++
+    inc    edx       
+    
+    ; j %= RC6_KEYLEN/4
+    cmp    edx, [rsp]
+    sbb    ecx, ecx
+    and    edx, ecx
+    inc    ebp
+    cmp    ebp, RC6_KR*3
+    jne    sk_l1
+
+    ; STACKINFO: rbp, rcx/4
+      
+    pop    rcx
+    add    rsp, rcx
+    
+    leave
     ret
 
 %define A esi
