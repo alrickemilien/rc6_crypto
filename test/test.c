@@ -20,6 +20,50 @@ const char *test_keys[] = {
   "899aabbccddeeff01032547698badcfe"
 };
 
+const char *test_keys_load[] = {
+  "2a66311c9b17852d8108b20739d14185"
+  "9c64df5f4bed6bcdb1d887264e6ee8c6"
+  "66f7fa9c429c2724c955b6bf9306e49a"
+  "75524dd956f4da3c5ec06b9babbc779b",
+
+  "05479d38e4a3e582fbcc7a4be878faa4"
+  "8ed149805f5873fdaec05ae6aafffe1d"
+  "6bf8b7e364e2768223c4d46fda521c4b"
+  "662b9392c51ae971be84587a473c1481",
+
+  "483f34e8beff4b1fccd3227b65f94ec2"
+  "7401fcedca0a13d9913654cb1ab91fd3"
+  "dfb19060822d527abe1781ccc4e16d5f"
+  "61634eb1a419bc4d2f6a48e721b16cd6"
+  "3f34c1766fa6fa761d90b27acc14532a"
+  "2389128f04d088c3122c5888115132ac",
+
+  "04d80adec85296a3c7ca853cd665bea0"
+  "4d34492fe110bf659f4acf83eb85cb10"
+  "f9f0f8eb2275ea3fe5dc8714a1b4b8b4"
+  "1a28cd0a618fbe876fc1ede08eaf634d"
+  "7d213901bed7ab7379ba092e6179bc8a"
+  "aa35b6f60091b3ca65f970e9687e9e94",
+
+  "65e01b1bb580202e58edcc0e03fde54f"
+  "60e1eaf9f28027800bed7bdfb77ce169"
+  "eb3c65698ceeb874eb0f30a89d75b3af"
+  "a69cbfd8bf0c6cfa47ffb9c53912205a"
+  "024584d8cd99593953686a6ad03fcdc9"
+  "230ef513911fec26773273abce8457ac"
+  "cc75e2d342701aed8c49423326e86c7a"
+  "1d68bdd8386d86b3ab027179a22e0011",
+
+  "8d4eee346ca3559dcac74d45c00a874a"
+  "5f034ef9e5ffbcf4ee57ded7120160d7"
+  "19d36d384292f8b560cfb203d5ad7ce2"
+  "5e043e957922e9b0a1ee23349c6787aa"
+  "21cb2309c6cd835ef65f68ba7c74a515"
+  "249e93359ed327da6cd53e603e0a1a13"
+  "b65035dff9422a66ab9b84c5270960fc"
+  "1ac4363043c8ee38995e8fa71e2b3e22",
+};
+
 const char *test_plaintexts[] ={
   "00000000000000000000000000000000",
   "02132435465768798a9bacbdcedfe0f1",
@@ -38,35 +82,13 @@ const char *test_ciphertexts[] ={
   "c8241816f0d7e48920ad16a1674e5d48"
 };
 
-size_t hex2bin (void *bin, const char hex[]) {
-  size_t  len, i;
-  int     x;
-  uint8_t *p;
-  
-  p = (uint8_t*)bin;
-  len = strlen (hex);
-  
-  if ((len & 1) != 0)
-    return (0); 
-  
-  for (i=0; i<len; i++) {
-    if (isxdigit((int)hex[i]) == 0)
-      return (0); 
-  }
-  
-  for (i=0; i<len / 2; i++) {
-    sscanf (&hex[i * 2], "%2x", &x);
-    p[i] = (uint8_t)x;
-  } 
-
-  return (len / 2);
-} 
-
+size_t bin2hex(uint8_t *p, char hex[], size_t len);
+size_t hex2bin(void *bin, const char hex[]);
 
 int test_set_key(void) {
     RC6_KEY rc6_key;
     // size_t  plen, clen, klen;
-    size_t  klen;
+    size_t  klen, koutlen;
 
     uint8_t k[32];
     uint8_t c_in[32], c_out[32];
@@ -79,8 +101,10 @@ int test_set_key(void) {
         memset(c_in, 0, sizeof(c_in));
         memset(c_out, 0, sizeof(c_out));
         memset(k, 0, sizeof(k));
+        memset(k_out, 0, sizeof(k_out));
 
         klen = hex2bin(k, test_keys[i]);
+        koutlen = hex2bin(k, test_keys[i]);
         // clen = hex2bin(c_in, test_ciphertexts[i]);
         // plen = hex2bin(p_in, test_plaintexts[i]);
 
@@ -91,9 +115,18 @@ int test_set_key(void) {
         ww_set_key(&rc6_key, k, klen);
 
         printf("test_keys[%2ld] - content of rc6_key:", i);
-        for (size_t i = 0; i < klen; i++)
-          printf(" %" PRIu32, rc6_key.x[i]);
+        for (size_t j = 0; j < klen; j++)
+          printf(" %08" PRIx32, rc6_key.x[j]);
         printf("\n\n");
+
+        printf("test_keys_load[%2ld] - content of rc6_key:", i);
+        for (size_t j = 0; j < klen; j++)
+          printf(" %.8s", test_keys_load[i] + j * 8);
+        printf("\n\n");
+
+        printf("rc6_key.x[0] : %08" PRIx32 "\ntest_keys_load[i][0] : %08" PRIx32 "\n", rc6_key.x[0], test_keys_load[i][0]);
+
+        assert(memcmp(rc6_key.x, hex2bin(test_keys_load[i]), 1 * sizeof(uint32_t)) == 0);
 
         // printf("Encrypt ...\n");
 

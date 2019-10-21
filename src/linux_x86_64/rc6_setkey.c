@@ -90,7 +90,7 @@ int main(void) {
 
         printf("test_keys[%2ld] - content of rc6_key:", i);
         for (size_t i = 0; i < klen; i++)
-          printf(" %" PRIu32, rc6_key.x[i]);
+          printf(" %08" PRIx32, rc6_key.x[i]);
         printf("\n\n");
     }
 

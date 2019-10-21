@@ -1,5 +1,6 @@
 TEST=$(OUT_DIR)/test
-TEST_SRC=test/test.c
+TEST_SRC=test/test.c \
+		test/utils.c
 TEST_OBJ=$(TEST_SRC:.c=.o)
 CC_FLAGS=-Wall -Wextra -Werror
 
