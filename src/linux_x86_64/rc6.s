@@ -56,7 +56,7 @@ dbg2:
     mov     eax, RC6_P
     mov     rsi, rdx            ; Use x86_64 registers over x86 because we are working with adresses
     mov     rdi, rdx
-    mov     cl, RC6_KR
+    mov     rcx, RC6_KR
 sk_init:
     stosd                       ; stosd stores a doubleword from the EAX register into the ESI operand.
     add     eax, RC6_Q
@@ -65,7 +65,7 @@ sk_init:
     xor     eax, eax            ; EAX=A=0
     cdq                         ; EDX=B=0 the cdq (Convert Doubleword to Quadword) instruction extends the sign bit of EAX into the EDX register. 
     xor     edi, edi            ; EDI=i=0
-    xor     ebp, ebp            ; EPB=j=0
+    xor     ebp, ebp            ; EBP=j=0
     mov     ch, (-RC6_KR*3) & 255
 sk_l1:
     add    eax, edx                 ; A=A+B
@@ -73,11 +73,9 @@ sk_l1:
     rol    eax, 3                   ; rotate 3 bits left in EAX
     mov    [rsi + rdi * 4], eax     ; key->S[i]=A
     
-    lea    ecx, [eax + edx]         ; store A+B into ECX
-
                                     ; B = L[j] = ROTL(L[j] + A+B, A+B);
     add    edx, eax                 ; B=B+A
-    ; mov    cl, dl
+    mov    cl, dl
     add    edx, [rsp + rbp * 4]     ; B=B+L[j]
     rol    edx, cl                  ; B=ROTL(B, A+B) cl is the part of ecx where is stored A+B
     mov    [rsp + rbp * 4], edx     ; L[j]=B
@@ -90,7 +88,6 @@ sk_l1:
     xor    edi, edi                 ; Adds second operand and the CF flag,
                                     ; then subtracts the result from first operand.
                                     ; Result of the subtraction is stored in the second operand. 
-
 sk_l2:    
     inc    ebp                      ; j++
     
@@ -104,7 +101,6 @@ sk_l3:
     shl     rbx, 2
     lea     rsp, [rsp + rbx]    ; equivalent to pop    rcx
                                 ;               add    rsp, rcx
-; dbg4:    
     pop     rbp
 dbg5:        
     ret
