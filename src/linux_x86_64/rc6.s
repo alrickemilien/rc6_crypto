@@ -23,7 +23,6 @@ extern  _GLOBAL_OFFSET_TABLE_  ; Each code module in your shared library should 
 ; Reading Without Popping DWORD PTR SS:[esp]
 
 global _ww_set_key:function
-global __ww_set_key:function
 
 _ww_set_key:
     push    rbp                 ; function prolog
@@ -40,75 +39,74 @@ sk:                             ; STACKINFO: rbp
     pop     rdx                 ; RDX=rc6 key
 
                                 ; STACKINFO: rbp
-
+dbg1:
     sub     rsp, rcx            ; Create local buffer of size RCX
-    mov     rdi, rsp
+    mov     rdi, rsp            ; stores end of local buffer into RDI
 
-    push    rcx                 ; Save RCX on the stack, later acces must have start with RSP+8
 
                                 ; mov eax, 0xA  ; set EAX to 0xA (1010 in binary)
                                 ; shr eax, 2    ; shifts 2 bits to the right in EAX, now equal to 0x2 (0010 in binary)
     shr     ecx, 2              ; keylen/= 4
+    mov     ebx, ecx             ; Save ECX/4 into the EBX, later acces must have start with RSP+8
 
                                 ; STACKINFO: rcx
-                        
-    rep     movsd               ; rep repeats till RCX is 0
+dbg2:
+    rep     movsd               ; rep repeats till RCX is 0, copying key to local buffer
     
     mov     eax, RC6_P
     mov     rsi, rdx            ; Use x86_64 registers over x86 because we are working with adresses
     mov     rdi, rdx
-    mov     rcx, RC6_KR
+    mov     cl, RC6_KR
 sk_init:
     stosd                       ; stosd stores a doubleword from the EAX register into the ESI operand.
     add     eax, RC6_Q
     loop    sk_init             ; Each time loop is executed, the RCX is decremented, then checked for 0.
 
     xor     eax, eax            ; EAX=A=0
-    xor     ebx, ebx            ; EBX=B=0
-    xor     ebp, ebp            ; EBP=k=0
+    cdq                         ; EDX=B=0 the cdq (Convert Doubleword to Quadword) instruction extends the sign bit of EAX into the EDX register. 
     xor     edi, edi            ; EDI=i=0
-    xor     edx, edx            ; EDX=j=0
-
-    ; mov    ch, (-RC6_KR*3) & 255
+    xor     ebp, ebp            ; EPB=j=0
+    mov     ch, (-RC6_KR*3) & 255
 sk_l1:
-    add    eax, ebx                 ; A=A+B
+    add    eax, edx                 ; A=A+B
     add    eax, [rsi + rdi * 4]     ; A=A+key->S[i]
     rol    eax, 3                   ; rotate 3 bits left in EAX
-    lea    ecx, [eax + ebx]         ; store A+B into ECX
     mov    [rsi + rdi * 4], eax     ; key->S[i]=A
     
+    lea    ecx, [eax + edx]         ; store A+B into ECX
+
                                     ; B = L[j] = ROTL(L[j] + A+B, A+B);
-    add    ebx, eax                 ; B=B+A
-    add    ebx, [rsp + 4 + rbp * 4] ; B=B+L[j]
-    rol    ebx, cl                  ; B=ROTL(B, A+B) cl is the part of ecx where is stored A+B
-    mov    [rsp + 4 + rbp * 4], ebx ; L[j]=B
+    add    edx, eax                 ; B=B+A
+    ; mov    cl, dl
+    add    edx, [rsp + rbp * 4]     ; B=B+L[j]
+    rol    edx, cl                  ; B=ROTL(B, A+B) cl is the part of ecx where is stored A+B
+    mov    [rsp + rbp * 4], edx     ; L[j]=B
     
     inc    edi                      ; i++
 
                                     ; i %= (RC6_ROUNDS*2)+4
-    cmp    edi, RC6_KR  
-    sbb    ecx, ecx                 ; Adds second operand and the CF flag,
+    cmp    edi, RC6_KR
+    jb     sk_l2
+    xor    edi, edi                 ; Adds second operand and the CF flag,
                                     ; then subtracts the result from first operand.
                                     ; Result of the subtraction is stored in the second operand. 
-    and    edi, ecx
 
-    ; j++
-    inc    edx       
+sk_l2:    
+    inc    ebp                      ; j++
     
-    ; j %= RC6_KEYLEN/4
-    cmp    edx, [rsp]
-    sbb    ecx, ecx
-    and    edx, ecx
-    inc    ebp
-    cmp    ebp, RC6_KR*3
-    jne    sk_l1
-
-    ; STACKINFO: rbp, rcx/4
+    cmp    ebp, ebx                 ; j %= RC6_KEYLEN/4
+    jb     sk_l3
+    xor    ebp, ebp
+sk_l3:
+    inc    ch
+    jnz    sk_l1
       
-    pop    rcx
-    add    rsp, rcx
-    
-    leave
+    shl     rbx, 2
+    lea     rsp, [rsp + rbx]    ; equivalent to pop    rcx
+                                ;               add    rsp, rcx
+; dbg4:    
+    pop     rbp
+dbg5:        
     ret
 
 %define A esi
