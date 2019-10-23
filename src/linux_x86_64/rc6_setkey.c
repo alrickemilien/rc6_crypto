@@ -89,8 +89,8 @@ int main(void) {
         rc6_setkey(&rc6_key, k, klen);
 
         printf("test_keys[%2ld] - content of rc6_key:", i);
-        for (size_t i = 0; i < klen; i++)
-          printf(" %08" PRIx32, rc6_key.x[i]);
+        for (size_t j = 0; j < RC6_KR * sizeof(uint32_t); j++)
+            printf("%02" PRIx8, ((uint8_t*)rc6_key.x)[j]);
         printf("\n\n");
     }
 

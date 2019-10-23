@@ -83,3 +83,7 @@ platform shell make re                  # Run shell command with platform shell 
 ## Sources for asm discover
 
 - [Functions tack and parameters](https://en.wikibooks.org/wiki/X86_Disassembly/Functions_and_Stack_Frames)
+
+## Sources encryption/aes/rc6
+
+- [AES and endiannes](https://security.stackexchange.com/questions/13553/does-the-endianness-used-with-an-encryption-algorithm-affect-its-security#answer-13565)

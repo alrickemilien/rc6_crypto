@@ -13,7 +13,7 @@
 #define RC6_P      0xB7E15163
 #define RC6_Q      0x9E3779B9
 
-const char *test_keys[] = {
+static const char *test_keys[] = {
   "00000000000000000000000000000000",
   "0123456789abcdef0112233445566778",
   "00000000000000000000000000000000"
@@ -26,51 +26,81 @@ const char *test_keys[] = {
   "899aabbccddeeff01032547698badcfe"
 };
 
-const char *test_keys_load[] = {
-  "2a66311c9b17852d8108b20739d14185"
-  "9c64df5f4bed6bcdb1d887264e6ee8c6"
-  "66f7fa9c429c2724c955b6bf9306e49a"
-  "75524dd956f4da3c5ec06b9babbc779b",
+static const char *test_keys_load[] = {
+  "1c31662a2d85179b07b208818541d139"
+  "5fdf649ccd6bed4b2687d8b1c6e86e4e"
+  "9cfaf76624279c42bfb655c99ae40693"
+  "d94d52753cdaf4569b6bc05e9b77bcab"
+  "a139ee155f75e7668d06250060d7b67c"
+  "bea4b4a6b88fb9119f012b51ce9f195a"
+  "9e8f46bd3a6db61d90d3b56142edbf84"
+  "e8ae9086e59e4b77b134d59fe0398984"
+  "5637a062497397fdcacdab59911eafc8"
+  "07216d8e7d2c9b3504800163e37ab2c7"
+  "b3c1fc55b78dbdc56a01b40583ac384b",
 
-  "05479d38e4a3e582fbcc7a4be878faa4"
-  "8ed149805f5873fdaec05ae6aafffe1d"
-  "6bf8b7e364e2768223c4d46fda521c4b"
-  "662b9392c51ae971be84587a473c1481",
+  "389d470582e5a3e44b7accfba4fa78e8"
+  "8049d18efd73585fe65ac0ae1dfeffaa"
+  "e3b7f86b8276e2646fd4c4234b1c52da"
+  "92932b6671e91ac57a5884be81143c47"
+  "846624ab470077b96a7b329829e29b52"
+  "9a8092b956fac1798dd17c61089acb1b"
+  "b3bbab8bbd61d00da2c81e8cd086f220"
+  "f4eff8fa927cb846016b09c5b0c9dcdb"
+  "b412b2d1383d0fddf32dc0272615b20f"
+  "a6fae0468f74d9e9ccfd74e28e3fae09"
+  "405ef895400af9a96914e5f0d160f045",
 
-  "483f34e8beff4b1fccd3227b65f94ec2"
-  "7401fcedca0a13d9913654cb1ab91fd3"
-  "dfb19060822d527abe1781ccc4e16d5f"
-  "61634eb1a419bc4d2f6a48e721b16cd6"
-  "3f34c1766fa6fa761d90b27acc14532a"
-  "2389128f04d088c3122c5888115132ac",
+  "e8343f481f4bffbe7b22d3ccc24ef965"
+  "edfc0174d9130acacb543691d31fb91a"
+  "6090b1df7a522d82cc8117be5f6de1c4"
+  "b14e63614dbc19a4e7486a2fd66cb121"
+  "76c1343f76faa66f7ab2901d2a5314cc"
+  "8f128923c388d00488582c12ac325111"
+  "39c57f9f1bb139b76f1f0874e5748afb"
+  "764e6a444e9cdbbcedab79e8584a07fa"
+  "bc01ab2e641526f15a7ee3516cb315c8"
+  "2ede7b45359782828d83d4b1f71746cc"
+  "6e5946f3975eb68747b07a226f644660",
 
-  "04d80adec85296a3c7ca853cd665bea0"
-  "4d34492fe110bf659f4acf83eb85cb10"
-  "f9f0f8eb2275ea3fe5dc8714a1b4b8b4"
-  "1a28cd0a618fbe876fc1ede08eaf634d"
-  "7d213901bed7ab7379ba092e6179bc8a"
-  "aa35b6f60091b3ca65f970e9687e9e94",
+  "de0ad804a39652c83c85cac7a0be65d6"
+  "2f49344d65bf10e183cf4a9f10cb85eb"
+  "ebf8f0f93fea75221487dce5b4b8b4a1"
+  "0acd281a87be8f61e0edc16f4d63af8e"
+  "0139217d73abd7be2e09ba798abc7961"
+  "f6b635aacab39100e970f965949e7e68"
+  "88517ef1f75cc57e938e2cfeae3d7b2e"
+  "b83c095603fa28edecaa2eab6f3649d0"
+  "d3cbd4fc6f90b384f1d9ce8e53242ae0"
+  "036e3b12812a19a62c25488604bd9fb2"
+  "c12d5d73587b4497b2462b364203317c",
 
-  "65e01b1bb580202e58edcc0e03fde54f"
-  "60e1eaf9f28027800bed7bdfb77ce169"
-  "eb3c65698ceeb874eb0f30a89d75b3af"
-  "a69cbfd8bf0c6cfa47ffb9c53912205a"
-  "024584d8cd99593953686a6ad03fcdc9"
-  "230ef513911fec26773273abce8457ac"
-  "cc75e2d342701aed8c49423326e86c7a"
-  "1d68bdd8386d86b3ab027179a22e0011",
+  "1b1be0652e2080b50ecced584fe5fd03"
+  "f9eae160802780f2df7bed0b69e17cb7"
+  "69653ceb74b8ee8ca8300febafb3759d"
+  "d8bf9ca6fa6c0cbfc5b9ff475a201239"
+  "d8844502395999cd6a6a6853c9cd3fd0"
+  "13f50e2326ec1f91ab733277ac5784ce"
+  "d3e275cced1a70423342498c7a6ce826"
+  "d8bd681db3866d38797102ab11002ea2"
+  "2586122bae7c008f7269df83e4995721"
+  "284fcf82ffcfcc269def5a52ac977484"
+  "49625223a81b73fea74b8a3bd69b5f5d",
 
-  "8d4eee346ca3559dcac74d45c00a874a"
-  "5f034ef9e5ffbcf4ee57ded7120160d7"
-  "19d36d384292f8b560cfb203d5ad7ce2"
-  "5e043e957922e9b0a1ee23349c6787aa"
-  "21cb2309c6cd835ef65f68ba7c74a515"
-  "249e93359ed327da6cd53e603e0a1a13"
-  "b65035dff9422a66ab9b84c5270960fc"
-  "1ac4363043c8ee38995e8fa71e2b3e22",
+  "34ee4e8d9d55a36c454dc7ca4a870ac0"
+  "f94e035ff4bcffe5d7de57eed7600112"
+  "386dd319b5f8924203b2cf60e27cadd5"
+  "953e045eb0e922793423eea1aa87679c"
+  "0923cb215e83cdc6ba685ff615a5747c"
+  "35939e24da27d39e603ed56c131a0a3e"
+  "df3550b6662a42f9c5849babfc600927"
+  "3036c41a38eec843a78f5e99223e2b1e"
+  "932de54c09a9c99c847976247dd18aef"
+  "91d552c26233bfa8868f15008609e8ca"
+  "d0cf67b2132b571d4bc817bd15dc21a2",
 };
 
-const char *test_plaintexts[] = {
+static const char *test_plaintexts[] = {
   "00000000000000000000000000000000",
   "02132435465768798a9bacbdcedfe0f1",
   "00000000000000000000000000000000",
@@ -79,7 +109,7 @@ const char *test_plaintexts[] = {
   "02132435465768798a9bacbdcedfe0f1" 
 };
 
-const char *test_ciphertexts[] = {
+static const char *test_ciphertexts[] = {
   "8fc3a53656b1f778c129df4e9848a41e",
   "524e192f4715c6231f51f6367ea43f18",
   "6cd61bcb190b30384e8a3f168690ae82",
@@ -93,14 +123,17 @@ size_t hex2bin(void *bin, const char hex[]);
 
 int test_set_key(void) {
     RC6_KEY rc6_key;
-    size_t  /*plen, clen,*/ klen, koutlen;
+    size_t  /*plen, clen,*/ klen;
 
     uint8_t k[32];
-    uint8_t k_out[RC6_KR];
+    uint8_t k_out[RC6_KR * sizeof(uint32_t)];
     uint8_t c_in[32], c_out[32];
     uint8_t p_in[32], p_out[32];
 
-    for (size_t i = 0; i < sizeof(test_keys) / sizeof(char*); i++)
+    (void)test_plaintexts;
+    (void)test_ciphertexts;
+
+    for (size_t i = 0; i < sizeof(test_keys) / sizeof(char*) ; i++)
     {
         memset(p_in, 0, sizeof(p_in));
         memset(p_out, 0, sizeof(p_out));
@@ -119,19 +152,18 @@ int test_set_key(void) {
 
         ww_set_key(&rc6_key, k, klen);
 
-        printf("test_keys[%2ld] - content of rc6_key:", i);
-        for (size_t j = 0; j < klen; j++)
-          printf(" %08" PRIx32, rc6_key.x[j]);
-        printf("\n\n");
+        // printf("test_keys[%2ld] - content of rc6_key:", i);
+        // for (size_t j = 0; j < RC6_KR* sizeof(uint32_t); j++)
+        //     printf("%02" PRIx8, ((uint8_t*)rc6_key.x)[j]);
+        // printf("\n\n");
+        // printf("test_keys_load[%2ld] - content of k_out:", i);
+        // for (size_t j = 0; j < RC6_KR* sizeof(uint32_t); j++)
+        //     printf("%02" PRIx8, ((uint8_t*)k_out)[j]);
+        // printf("\n\n");
 
-        printf("test_keys_load[%2ld] - content of rc6_key:", i);
-        for (size_t j = 0; j < klen; j++)
-          printf(" %.8s", test_keys_load[i] + j * 8);
-        printf("\n\n");
+        hex2bin(k_out, test_keys_load[i]);
 
-        koutlen = hex2bin(k_out, test_keys_load[i]);
-        printf("rc6_key.x[0] : %08" PRIx32 " k_out[0] : %08" PRIx32 "\n", rc6_key.x[0], ((uint32_t*)k_out)[0]);
-        assert(memcmp(rc6_key.x, k_out, koutlen) == 0);
+        assert(memcmp(rc6_key.x, k_out, RC6_KR * sizeof(uint32_t)) == 0);
 
         // printf("Encrypt ...\n");
 
