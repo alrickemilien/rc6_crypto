@@ -130,7 +130,7 @@ int test_set_key(void) {
         printf("\n\n");
 
         koutlen = hex2bin(k_out, test_keys_load[i]);
-        printf("rc6_key.x[0] : %08" PRIx32 "\nk_out[0] : %08" PRIx32 "\n", rc6_key.x[0], k_out[0]);
+        printf("rc6_key.x[0] : %08" PRIx32 " k_out[0] : %08" PRIx32 "\n", rc6_key.x[0], ((uint32_t*)k_out)[0]);
         assert(memcmp(rc6_key.x, k_out, koutlen) == 0);
 
         // printf("Encrypt ...\n");

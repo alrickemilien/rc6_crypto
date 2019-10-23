@@ -44,9 +44,11 @@ size_t hex2bin (void *bin, const char hex[])
   
   // For each 2 digits
   for (i=0; i<len / 2; i++) {
-    // Transform the two hex digits into 32bits value and stores into x
+    // Transform the two hex digits into 8bits value and stores into x
     sscanf (&hex[i * 2], "%2x", &x);
     p[i] = (uint8_t)x;
+
+    printf("hex[i] : %" PRIx32 "\n", p[i]);
   } 
 
   return (len / 2);
