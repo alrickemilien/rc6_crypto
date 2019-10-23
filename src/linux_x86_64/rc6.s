@@ -114,6 +114,7 @@ global __ww_crypt:function
 _ww_crypt:
     push rbp        ; function prolog
     mov rbp, rsp
+    push rsp
 
     ; rdi => rc6_key
     ; rsi => input
@@ -195,14 +196,14 @@ crypt_l3:
                         ; A = ROTL(A ^ T0, T1) + key->x[i];
     xor    A, eax       ; A=A^T0
     rol    A, cl        ; A=ROTL(A)
-    add    A, [edi]     ; A=A+key->x[i]
+    add    A, [rdi]     ; A=A+key->x[i]
     scasd
     
                         ; C=ROTL(C ^ T1, T0) + key->x[i+1];
     xor    C, ecx       ; C=C^T1
     xchg   eax, ecx     ; switch T0 and T1
     rol    C, cl        ; C=ROTL(C, T0)
-    add    C, [edi]     ; C=C+key->x[i+1]
+    add    C, [rdi]     ; C=C+key->x[i+1]
     
     jmp    crypt_l5
 crypt_l4:    
@@ -236,16 +237,16 @@ crypt_l5:
 
     jecxz  crypt_l6
     
-    add    A, [edi]     ; out[0] += key->x[42];
-    add    C, [edi+4]   ; out[2] += key->x[43];
+    add    A, [rdi]     ; out[0] += key->x[42];
+    add    C, [rdi+4]   ; out[2] += key->x[43];
     jmp    crypt_l7
 crypt_l6:
     xchg   D, A
     xchg   C, B
-    sub    D, [edi]     ; out[3] -= key->x[1];
-    sub    B, [edi-4]   ; out[1] -= key->x[0];
+    sub    D, [rdi]     ; out[3] -= key->x[1];
+    sub    B, [rdi-4]   ; out[1] -= key->x[0];
     cld
-crypt_l7:                   ; save ciphertext
+crypt_l7:                       ; save ciphertext
     pop     rdx                 ; output
     pop     rsi                 ; input
     pop     rdi                 ; rc6_key
