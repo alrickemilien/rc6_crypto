@@ -3,9 +3,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <inttypes.h>
 #include "ww_encrypt.h"
+
+#define RC6_ROUNDS 20
+#define RC6_KR     (2*(RC6_ROUNDS+2))
+#define RC6_P      0xB7E15163
+#define RC6_Q      0x9E3779B9
 
 const char *test_keys[] = {
   "00000000000000000000000000000000",
@@ -64,7 +70,7 @@ const char *test_keys_load[] = {
   "1ac4363043c8ee38995e8fa71e2b3e22",
 };
 
-const char *test_plaintexts[] ={
+const char *test_plaintexts[] = {
   "00000000000000000000000000000000",
   "02132435465768798a9bacbdcedfe0f1",
   "00000000000000000000000000000000",
@@ -73,7 +79,7 @@ const char *test_plaintexts[] ={
   "02132435465768798a9bacbdcedfe0f1" 
 };
 
-const char *test_ciphertexts[] ={
+const char *test_ciphertexts[] = {
   "8fc3a53656b1f778c129df4e9848a41e",
   "524e192f4715c6231f51f6367ea43f18",
   "6cd61bcb190b30384e8a3f168690ae82",
@@ -87,10 +93,10 @@ size_t hex2bin(void *bin, const char hex[]);
 
 int test_set_key(void) {
     RC6_KEY rc6_key;
-    // size_t  plen, clen, klen;
-    size_t  klen, koutlen;
+    size_t  /*plen, clen,*/ klen, koutlen;
 
     uint8_t k[32];
+    uint8_t k_out[RC6_KR];
     uint8_t c_in[32], c_out[32];
     uint8_t p_in[32], p_out[32];
 
@@ -104,7 +110,6 @@ int test_set_key(void) {
         memset(k_out, 0, sizeof(k_out));
 
         klen = hex2bin(k, test_keys[i]);
-        koutlen = hex2bin(k, test_keys[i]);
         // clen = hex2bin(c_in, test_ciphertexts[i]);
         // plen = hex2bin(p_in, test_plaintexts[i]);
 
@@ -124,9 +129,9 @@ int test_set_key(void) {
           printf(" %.8s", test_keys_load[i] + j * 8);
         printf("\n\n");
 
-        printf("rc6_key.x[0] : %08" PRIx32 "\ntest_keys_load[i][0] : %08" PRIx32 "\n", rc6_key.x[0], test_keys_load[i][0]);
-
-        assert(memcmp(rc6_key.x, hex2bin(test_keys_load[i]), 1 * sizeof(uint32_t)) == 0);
+        koutlen = hex2bin(k_out, test_keys_load[i]);
+        printf("rc6_key.x[0] : %08" PRIx32 "\nk_out[0] : %08" PRIx32 "\n", rc6_key.x[0], k_out[0]);
+        assert(memcmp(rc6_key.x, k_out, koutlen) == 0);
 
         // printf("Encrypt ...\n");
 

@@ -39,10 +39,9 @@ sk:                             ; STACKINFO: rbp
     pop     rdx                 ; RDX=rc6 key
 
                                 ; STACKINFO: rbp
-dbg1:
+
     sub     rsp, rcx            ; Create local buffer of size RCX
     mov     rdi, rsp            ; stores end of local buffer into RDI
-
 
                                 ; mov eax, 0xA  ; set EAX to 0xA (1010 in binary)
                                 ; shr eax, 2    ; shifts 2 bits to the right in EAX, now equal to 0x2 (0010 in binary)
@@ -50,7 +49,7 @@ dbg1:
     mov     ebx, ecx             ; Save ECX/4 into the EBX, later acces must have start with RSP+8
 
                                 ; STACKINFO: rcx
-dbg2:
+
     rep     movsd               ; rep repeats till RCX is 0, copying key to local buffer
     
     mov     eax, RC6_P
@@ -101,8 +100,7 @@ sk_l3:
     shl     rbx, 2
     lea     rsp, [rsp + rbx]    ; equivalent to pop    rcx
                                 ;               add    rsp, rcx
-    pop     rbp
-dbg5:        
+    pop     rbp       
     ret
 
 %define A esi
@@ -123,24 +121,23 @@ _ww_crypt:
     ; rcx => encrypt/decrypt mode
 crypt:                          ; x86_64 parameters order is RDI, RSI, RDX, RCX, R8, and R9
     push    rdx                 ; output
-    push    rcx                 ; encrypt/decrypt mode
     push    rsi                 ; input
     push    rdi                 ; rc6_key
-    push    rbp                 ; Save RBP because now it is used for D
+    push    rcx                 ; encrypt/decrypt mode
 load_ciphertext:
     lodsd                       ; loadsd load doubleword at address DS:(E)SI into EAX
-    xchg   eax, D
+    xchg    eax, D              ; load EAX register into D (EBP register)
     lodsd
-    xchg   eax, B
+    xchg    eax, B              ; load EAX register into B (EBX register)
     lodsd
-    xchg   eax, C
+    xchg    eax, C              ; load EAX register into C (EDX register)
     lodsd
-    xchg   eax, D
-    xchg   eax, A
+    xchg    eax, D              ; load EAX register into D (EBP register)
+    xchg    eax, A              ; load EAX register into A (ESI register)
 crypt_l0:
-    mov    eax, RC6_ROUNDS
-    mov    ecx, [rsp + 8 * 3]   ; Get the encrypt/decrypt mode access pshed rcx
-    jecxz  crypt_l1
+    mov     eax, RC6_ROUNDS
+    pop     rcx
+    jecxz   crypt_l1
 
     add    B, [rdi]             ; B += key->x[0];
     scasd                       ; compares doubleword using ES:(E)DI register with the value in EAX, then sets status flags in EFLAGS
@@ -150,7 +147,7 @@ crypt_l0:
 crypt_l1:
     lea    edi, [rdi + rax * 8 + 12]    ; move to end of key
     std                                 ; load backwards
-    
+
     sub    C, [rdi]                     ; C -= key->x[43];
 
     scasd                               ; compares doubleword using ES:(E)DI register with the value in EAX, then sets status flags in EFLAGS
@@ -164,6 +161,7 @@ crypt_l3:
     push    rcx
     dec     rcx
     
+    ; save registers
     push    rax
     push    rcx
     push    rdx
@@ -182,6 +180,7 @@ crypt_l3:
     lea     ecx, [D+D+1]    ;
     imul    ecx, D          ;
     rol     ecx, 5          ;
+    
     pop     rdi
     pop     rsi
     pop     rbp
@@ -196,14 +195,14 @@ crypt_l3:
                         ; A = ROTL(A ^ T0, T1) + key->x[i];
     xor    A, eax       ; A=A^T0
     rol    A, cl        ; A=ROTL(A)
-    add    A, [rdi]     ; A=A+key->x[i]
+    add    A, [edi]     ; A=A+key->x[i]
     scasd
     
                         ; C=ROTL(C ^ T1, T0) + key->x[i+1];
     xor    C, ecx       ; C=C^T1
     xchg   eax, ecx     ; switch T0 and T1
     rol    C, cl        ; C=ROTL(C, T0)
-    add    C, [rdi]     ; C=C+key->x[i+1]
+    add    C, [edi]     ; C=C+key->x[i+1]
     
     jmp    crypt_l5
 crypt_l4:    
@@ -237,35 +236,29 @@ crypt_l5:
 
     jecxz  crypt_l6
     
-    add    A, [rdi]     ; out[0] += key->x[42];
-    add    C, [rdi+4]   ; out[2] += key->x[43];
+    add    A, [edi]     ; out[0] += key->x[42];
+    add    C, [edi+4]   ; out[2] += key->x[43];
     jmp    crypt_l7
 crypt_l6:
     xchg   D, A
     xchg   C, B
-    sub    D, [rdi]     ; out[3] -= key->x[1];
-    sub    B, [rdi-4]   ; out[1] -= key->x[0];
+    sub    D, [edi]     ; out[3] -= key->x[1];
+    sub    B, [edi-4]   ; out[1] -= key->x[0];
     cld
 crypt_l7:                   ; save ciphertext
-    ; mov    edi, [esp+32+12] ; output
-    xchg   eax, A
+    pop     rdx                 ; output
+    pop     rsi                 ; input
+    pop     rdi                 ; rc6_key
+    xchg    eax, A
     stosd
-    xchg   eax, B
+    xchg    eax, B
     stosd
-    xchg   eax, C
+    xchg    eax, C
     stosd
-    xchg   eax, D
-    stosd
-    ; popad
+    xchg    eax, D
+    stosd                   ; copy into output
 crypt_return:
-    pop     rbp
-    pop     rdi
-    pop     rsi
-    pop     rcx
-    pop     rdx
-
-    leave           ; mov   rsp, rbp \n pop   rbp
+    ; popad
+    leave
     ret
 
-section .data
-    default rel
