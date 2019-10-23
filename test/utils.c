@@ -5,17 +5,6 @@
 #include <ctype.h>
 #include <inttypes.h>
 
-
-uint32_t endian(void)
-{
-  uint32_t one = 1L;
-
-  if (*((uint8_t*)(&one)) == 1)
-    return (LITTLE_ENDIAN); // 1000000 00000000 00000000 00000000
-
-  return (BIG_ENDIAN);// 0000000 00000000 00000000 10000000
-}
-
 size_t bin2hex (uint8_t *p, char hex[], size_t len)
 {
   size_t  i;
