@@ -1,9 +1,10 @@
-The projects implements symmetric encrypt / decrypt functions with algorithm built through asm, for discovering purposes
+The projects implements symmetric encrypt / decrypt functions with algorithm built through Intel assembly, for discovering purposes
 
 - Encryption must use external or self generated key.
 - Decryption execution must be insignificant.
 - Crypto functions must work for big and little endian.
 - Crypto functions must work on i384 and x64.
+- Use of Intel assembly
 
 The possible implementation are the following :
 
@@ -38,3 +39,51 @@ During compilation, binary test is provided at `./build/test`.
 On OSX, just run `./build/test`
 On Linux platform, run `LD_LIBRARY_PATH=build/ ./build/test`
 
+## GDB
+
+Example on how to use GDB to debug library.
+
+```
+gdb
+set environment LD_LIBRARY_PATH=./build # Only for shared librarys
+set disassembly-flavor intel            # Set syntax as x86 assembly
+file test_X                             # Debug the file test_X
+run
+b <function1>                           # Set a breakpoint on <function1> 
+...
+b <function1>
+run
+c                                        # Keep running to the next breakpoint
+c
+info registers rdi rsi rax rbx rcx       # Gives infos on bunch of registers
+make re                                 # You can direclty run shell commands from GDB
+...
+```
+
+## LLDB
+
+Example on how to use LLDB to debug library on osx.
+All LLDB doc is [here](https://lldb.llvm.org/use/map.html).
+
+```
+lldb
+settings set target.x86-disassembly-flavor intel            # Set syntax as x86 assembly
+file test_X                             # Debug the file test_X
+run
+b <function1>                           # Set a breakpoint on <function1> 
+...
+b <function1>
+run
+c                                        # Keep running to the next breakpoint
+c
+register read rdi rsi rax rbx rcx       # Gives infos on bunch of registers
+platform shell make re                  # Run shell command with platform shell <command> <param1> <param2> ...
+...
+```
+## Sources for asm discover
+
+- [Functions tack and parameters](https://en.wikibooks.org/wiki/X86_Disassembly/Functions_and_Stack_Frames)
+
+## Sources encryption/aes/rc6
+
+- [AES and endiannes](https://security.stackexchange.com/questions/13553/does-the-endianness-used-with-an-encryption-algorithm-affect-its-security#answer-13565)
