@@ -118,7 +118,6 @@ static const char *test_ciphertexts[] = {
   "c8241816f0d7e48920ad16a1674e5d48"
 };
 
-size_t bin2hex(uint8_t *p, char hex[], size_t len);
 size_t hex2bin(void *bin, const char hex[]);
 
 int test_set_key(void) {
@@ -129,8 +128,6 @@ int test_set_key(void) {
     uint8_t k_out[RC6_KR * sizeof(uint32_t)];
     uint8_t c_truth[32], c_out[32];
     uint8_t p_in[32], p_out[32];
-
-    (void)test_plaintexts;
 
     for (size_t i = 0; i < sizeof(test_keys) / sizeof(char*) ; i++)
     {
@@ -144,8 +141,6 @@ int test_set_key(void) {
         klen = hex2bin(k, test_keys[i]);
         clen = hex2bin(c_truth, test_ciphertexts[i]);
         plen = hex2bin(p_in, test_plaintexts[i]);
-
-        (void)plen;
 
         printf("test_keys[%2ld]: %64s - klen %ld\n", i, test_keys[i], klen);
 
@@ -170,23 +165,33 @@ int test_set_key(void) {
 
         ww_encrypt(&rc6_key, p_in, c_out);
 
-        printf("result [%2ld] ", i);
-        for (size_t j = 0; j < clen; j++)
-          printf("%02" PRIx8, ((uint8_t*)c_out)[j]);
-        printf("\n\n");
+        // printf("result [%2ld] ", i);
+        // for (size_t j = 0; j < clen; j++)
+        //   printf("%02" PRIx8, ((uint8_t*)c_out)[j]);
+        // printf("\n\n");
 
-        printf("truth [%2ld]  ", i);
-        for (size_t j = 0; j < clen; j++)
-          printf("%02" PRIx8, ((uint8_t*)c_truth)[j]);
-        printf("\n\n");
+        // printf("truth [%2ld]  ", i);
+        // for (size_t j = 0; j < clen; j++)
+        //   printf("%02" PRIx8, ((uint8_t*)c_truth)[j]);
+        // printf("\n\n");
 
         assert(memcmp(c_truth, c_out, clen) == 0);
 
-        // printf("Decrypt ...\n");
+        printf("Decrypt ...\n");
 
-        // ww_decrypt(&rc6_key, c_out, p_out);
+        ww_decrypt(&rc6_key, c_out, p_out);
 
-        // assert(memcmp(p_in, p_out, plen) == 0);
+        printf("result [%2ld] ", i);
+        for (size_t j = 0; j < plen; j++)
+          printf("%02" PRIx8, ((uint8_t*)p_out)[j]);
+        printf("\n\n");
+
+        printf("truth [%2ld]  ", i);
+        for (size_t j = 0; j < plen; j++)
+          printf("%02" PRIx8, ((uint8_t*)p_in)[j]);
+        printf("\n\n");
+
+        assert(memcmp(p_in, p_out, plen) == 0);
     }
 
     return (0);

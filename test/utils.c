@@ -5,24 +5,6 @@
 #include <ctype.h>
 #include <inttypes.h>
 
-size_t bin2hex (uint8_t *p, char hex[], size_t len)
-{
-  size_t  i;
-
-  // Return 0 when length is 0
-  if ((len & 1) != 0)
-    return (0); 
-  
-  // For each 32bits value digits
-  for (i=0; i < len; i++) {
-    // Transform the two hex digits into 32bits value and stores into x
-    sprintf(&hex[i * 2], "%2x", p[i]);
-  } 
-
-  return (len);
-} 
-
-
 size_t hex2bin (void *bin, const char hex[])
 {
   size_t  len, i;

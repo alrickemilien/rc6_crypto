@@ -145,7 +145,7 @@ crypt_l0:
     add    D, [rdi]             ; D += key->x[1];
     jmp    crypt_l2
 crypt_l1:
-    lea    edi, [rdi + rax * 8 + 12]    ; move to end of key
+    lea    rdi, [rdi + rax * 8 + 12]    ; move to end of key
     std                                 ; load backwards
 
     sub    C, [rdi]                     ; C -= key->x[43];
@@ -193,14 +193,14 @@ crypt_l3:
     jmp    crypt_l5
 crypt_l4:    
                         ; B = ROTR(B - key->x[i + 1], t) ^ u;
-    sub    C, [edi]
+    sub    C, [rdi]
     scasd
     ror    C, cl        ; t
     xor    C, eax       ; u
     
                         ; D = ROTR(D - key->x[i], u) ^ t;
     xchg   eax, ecx     ; swap u and t
-    sub    A, [edi]
+    sub    A, [rdi]
     ror    A, cl        ; u
     xor    A, eax       ; t
 crypt_l5:
