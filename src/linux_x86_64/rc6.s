@@ -100,7 +100,7 @@ sk_l3:
     shl     rbx, 2
     lea     rsp, [rsp + rbx]    ; equivalent to pop    rcx
                                 ;               add    rsp, rcx
-    pop     rbp       
+    pop     rbp
     ret
 
 %define A esi
@@ -114,18 +114,17 @@ global __ww_crypt:function
 _ww_crypt:
     push rbp        ; function prolog
     mov rbp, rsp
-    push rsp
 
     ; rdi => rc6_key
     ; rsi => input
     ; rdx => output
     ; rcx => encrypt/decrypt mode
 crypt:                          ; x86_64 parameters order is RDI, RSI, RDX, RCX, R8, and R9
-    push    rdx                 ; output
     push    rsi                 ; input
     push    rdi                 ; rc6_key
+    push    rdx                 ; output
     push    rcx                 ; encrypt/decrypt mode
-load_ciphertext:
+load_ciphertext:                ; load input cipher text
     lodsd                       ; loadsd load doubleword at address DS:(E)SI into EAX
     xchg    eax, D              ; load EAX register into D (EBP register)
     lodsd
@@ -162,15 +161,8 @@ crypt_l3:
     push    rcx
     dec     rcx
     
-    ; save registers
-    push    rax
-    push    rcx
-    push    rdx
-    push    rbx
-    push    rsp
-    push    rbp
-    push    rsi
-    push    rdi
+    
+    pushfq                  ; save flags
     
                             ; T0 = ROTL(B * (2 * B + 1), 5);
     lea     eax, [B+B+1]    ; T0=2*B+1
@@ -182,14 +174,7 @@ crypt_l3:
     imul    ecx, D          ;
     rol     ecx, 5          ;
     
-    pop     rdi
-    pop     rsi
-    pop     rbp
-    pop     rsp
-    pop     rbx
-    pop     rdx
-    pop     rcx
-    pop     rax
+    popfq                   ; retrieve flags
 
     jnz    crypt_l4
 
@@ -247,9 +232,7 @@ crypt_l6:
     sub    B, [rdi-4]   ; out[1] -= key->x[0];
     cld
 crypt_l7:                       ; save ciphertext
-    pop     rdx                 ; output
-    pop     rsi                 ; input
-    pop     rdi                 ; rc6_key
+    pop     rdi                 ; output
     xchg    eax, A
     stosd
     xchg    eax, B
@@ -257,9 +240,10 @@ crypt_l7:                       ; save ciphertext
     xchg    eax, C
     stosd
     xchg    eax, D
-    stosd                   ; copy into output
+    stosd                       ; copy into output
+    pop     rsi                 ; input into rsi, we wont use rsi after 
+    pop     rsi                 ; rc6_key into rsi, we wont use rsi after 
 crypt_return:
-    ; popad
-    leave
+    pop rbp
     ret
 

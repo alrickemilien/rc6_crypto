@@ -123,11 +123,11 @@ size_t hex2bin(void *bin, const char hex[]);
 
 int test_set_key(void) {
     RC6_KEY rc6_key;
-    size_t  /*plen,*/ clen, klen;
+    size_t  plen, clen, klen;
 
     uint8_t k[32];
     uint8_t k_out[RC6_KR * sizeof(uint32_t)];
-    uint8_t c_in[32], c_out[32];
+    uint8_t c_truth[32], c_out[32];
     uint8_t p_in[32], p_out[32];
 
     (void)test_plaintexts;
@@ -136,14 +136,16 @@ int test_set_key(void) {
     {
         memset(p_in, 0, sizeof(p_in));
         memset(p_out, 0, sizeof(p_out));
-        memset(c_in, 0, sizeof(c_in));
+        memset(c_truth, 0, sizeof(c_truth));
         memset(c_out, 0, sizeof(c_out));
         memset(k, 0, sizeof(k));
         memset(k_out, 0, sizeof(k_out));
 
         klen = hex2bin(k, test_keys[i]);
-        clen = hex2bin(c_in, test_ciphertexts[i]);
-        // plen = hex2bin(p_in, test_plaintexts[i]);
+        clen = hex2bin(c_truth, test_ciphertexts[i]);
+        plen = hex2bin(p_in, test_plaintexts[i]);
+
+        (void)plen;
 
         printf("test_keys[%2ld]: %64s - klen %ld\n", i, test_keys[i], klen);
 
@@ -168,7 +170,17 @@ int test_set_key(void) {
 
         ww_encrypt(&rc6_key, p_in, c_out);
 
-        assert(memcmp(c_in, c_out, clen) == 0);
+        printf("result [%2ld] ", i);
+        for (size_t j = 0; j < clen; j++)
+          printf("%02" PRIx8, ((uint8_t*)c_out)[j]);
+        printf("\n\n");
+
+        printf("truth [%2ld]  ", i);
+        for (size_t j = 0; j < clen; j++)
+          printf("%02" PRIx8, ((uint8_t*)c_truth)[j]);
+        printf("\n\n");
+
+        assert(memcmp(c_truth, c_out, clen) == 0);
 
         // printf("Decrypt ...\n");
 
