@@ -1,4 +1,4 @@
-The projects implements symmetric encrypt / decrypt functions with algorithm built through Intel assembly, for discovering purposes
+The projects implements symmetric encrypt / decrypt functions with algorithm built through Intel assembly, for discovering purposes and for packer project.
 
 - Encryption must use external or self generated key.
 - Decryption execution must be insignificant.
@@ -30,7 +30,7 @@ We decide here to implement **RC6** algorithm.
 ## Build
 
 Build requires **nasm >= 2.11**. Actually build works only on osx.
-Build generates `libww_crypto.so` into `./build` directory.
+Build generates `librc6_crypto.so` into `./build` directory.
 
 ## Test
 

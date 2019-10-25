@@ -6,7 +6,8 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <inttypes.h>
-#include "ww_encrypt.h"
+
+#include "rc6_encrypt.h"
 
 #define RC6_ROUNDS 20
 #define RC6_KR     (2*(RC6_ROUNDS+2))
@@ -146,7 +147,7 @@ int test_set_key(void) {
 
         printf("Set key ...\n");
 
-        ww_set_key(&rc6_key, k, klen);
+        rc6_set_key(&rc6_key, k, klen);
 
         // printf("test_keys[%2ld] - content of rc6_key:", i);
         // for (size_t j = 0; j < RC6_KR* sizeof(uint32_t); j++)
@@ -163,7 +164,7 @@ int test_set_key(void) {
 
         printf("Encrypt ...\n");
 
-        ww_encrypt(&rc6_key, p_in, c_out);
+        rc6_encrypt(&rc6_key, p_in, c_out);
 
         // printf("result [%2ld] ", i);
         // for (size_t j = 0; j < clen; j++)
@@ -179,7 +180,7 @@ int test_set_key(void) {
 
         printf("Decrypt ...\n");
 
-        ww_decrypt(&rc6_key, c_out, p_out);
+        rc6_decrypt(&rc6_key, c_out, p_out);
 
         printf("result [%2ld] ", i);
         for (size_t j = 0; j < plen; j++)

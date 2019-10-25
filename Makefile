@@ -10,14 +10,14 @@ endif
 
 OUT_DIR=./build
 
-$(shell mkdir -p $(OUT_DIR))
-
-include make/ww_crypto.mk
-include make/test.mk
-
 .PHONY: all clean fclean test
 
-all: $(WW_CRYPTO) test
+$(shell mkdir -p $(OUT_DIR))
+
+include make/rc6_crypto.mk
+include make/test.mk
+
+all: $(RC6_CRYPTO) test
 
 test: $(TEST)
 
@@ -25,6 +25,6 @@ clean:
 	@rm -rf $(OBJ) $(TEST_OBJ)
 
 fclean: clean
-	@rm -rf $(WW_CRYPTO) $(TEST)
+	@rm -rf $(RC6_CRYPTO) $(TEST)
 
 re: fclean all

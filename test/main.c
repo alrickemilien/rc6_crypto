@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <inttypes.h>
 
-#include "ww_encrypt.h"
+#include "rc6_encrypt.h"
 
 size_t hex2bin(void *bin, const char hex[]);
 
@@ -19,10 +19,12 @@ int main(int argc, const char **argv) {
 
     assert(argc == 3);
 
+    assert(strlen(argv[2]) == 32);
+
     memset(k, 0, sizeof(k));
     klen = hex2bin(k, argv[2]);
     assert(klen != 0);
-    ww_set_key(&rc6_key, k, klen);
+    rc6_set_key(&rc6_key, k, klen);
 
     plen = strlen(argv[1]);
     printf("Encrypt ...\n");
@@ -37,8 +39,8 @@ int main(int argc, const char **argv) {
         else
             memcpy(p_in, argv[2] + 16 * i, strlen(argv[2] + 16 * i));
 
-        ww_encrypt(&rc6_key, p_in, cypher);
-        ww_decrypt(&rc6_key, cypher, p_out);
+        rc6_encrypt(&rc6_key, p_in, cypher);
+        rc6_decrypt(&rc6_key, cypher, p_out);
 
         assert(memcmp(p_in, p_out, 16) == 0);
 
