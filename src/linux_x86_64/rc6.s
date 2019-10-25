@@ -22,9 +22,9 @@ extern  _GLOBAL_OFFSET_TABLE_  ; Each code module in your shared library should 
 
 ; Reading Without Popping DWORD PTR SS:[esp]
 
-global _ww_set_key:function
+global _rc6_set_key:function
 
-_ww_set_key:
+_rc6_set_key:
     push    rbp                 ; function prolog
     mov     rbp, rsp
 sk:                             ; STACKINFO: rbp
@@ -108,10 +108,10 @@ sk_l3:
 %define C edx
 %define D ebp
 
-global _ww_crypt:function
-global __ww_crypt:function
+global _rc6_crypt:function
+global __rc6_crypt:function
 
-_ww_crypt:
+_rc6_crypt:
     push rbp        ; function prolog
     mov rbp, rsp
 

@@ -6,7 +6,7 @@
 extern  _GLOBAL_OFFSET_TABLE_  ; Each code module in your shared library should define the GOT as an external symbol
 
 section .text
-global _ww_set_key
+global _rc6_set_key
 
 
 ; Note: Remember that the call instruction is basically equivalent to
@@ -25,7 +25,7 @@ global _ww_set_key
 ; |    | [ebp - X]  (esp - the current stack pointer. The use of push / pop is valid now)
 
 ; Reading Without Popping DWORD PTR SS:[esp]
-_ww_set_key:                    
+_rc6_set_key:                    
     push rbp                    ; function prolog
     mov rbp, rsp
 sk:
@@ -102,7 +102,7 @@ sk_return:
     leave                           ; mov   rsp, rbp \n pop   rbp
     ret
 
-global _ww_crypt
+global _rc6_crypt
 
-_ww_crypt:
+_rc6_crypt:
     ret
