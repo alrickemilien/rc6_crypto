@@ -15,7 +15,8 @@ ifeq ($(shell uname -s), Linux)
 SFLAGS=-f elf64
 endif
 
-RC6_CRYPTO=$(OUT_DIR)/librc6_crypto.so
+RC6_CRYPTO_SHARED=$(OUT_DIR)/librc6_crypto.so
+RC6_CRYPTO_STATIC=$(OUT_DIR)/librc6_crypto.a
 
 ifeq ($(shell uname -s), Darwin)
 SRC=src/osx/rc6.s
@@ -27,7 +28,10 @@ endif
 
 OBJ=$(SRC:.s=.o)
 
-$(RC6_CRYPTO): $(OBJ)
+$(RC6_CRYPTO_STATIC): $(OBJ)
+	ar rc $@ $^
+
+$(RC6_CRYPTO_SHARED): $(OBJ)
 	$(CC) -shared $^ -o $@ $(CFLAGS)
 
 %.o: %.s
