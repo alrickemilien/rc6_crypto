@@ -21,7 +21,6 @@ all: $(RC6_CRYPTO_SHARED) $(RC6_CRYPTO_STATIC) test
 
 static: $(RC6_CRYPTO_STATIC)
 shared: $(RC6_CRYPTO_SHARED)
-
 test: $(TEST)
 
 clean:
